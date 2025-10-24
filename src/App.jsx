@@ -27,11 +27,12 @@ export default function App() {
       <Sidebar onSelect={setPage} />
       <div className="flex-1 flex flex-col">
         <Header />
-        <main className="flex-1 overflow-y-auto p-4"><main className="flex-1 overflow-y-auto p-4">
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-6">
   <MainArea />
   {renderPage()}
 </main>
-</main>
+
+
       </div>
     </div>
   );
