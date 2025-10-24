@@ -7,10 +7,12 @@ import Forecasts from "./pages/Forecasts";
 import Reports from "./pages/Reports";
 
 export default function App() {
-  const [page, setPage] = useState("Usage Trends");
+  const [page, setPage] = useState("Dashboard Overview");
 
   const renderPage = () => {
     switch (page) {
+      case "Dashboard Overview":
+        return <MainArea />;
       case "Usage Trends":
         return <UsageTrends />;
       case "Forecasts":
