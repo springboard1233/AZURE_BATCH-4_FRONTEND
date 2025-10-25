@@ -1,4 +1,7 @@
+// src/pages/MainArea.jsx
 import React from "react";
+import SystemUsageTable from "../components/Table";
+import StorageUsageChart from "../components/ChartCard";
 
 export default function MainArea() {
   return (
@@ -7,11 +10,18 @@ export default function MainArea() {
         Dashboard Overview
       </h2>
 
-      <div className="bg-white p-8 rounded-lg shadow-md text-center">
+      {/* Optional: Info card */}
+      <div className="bg-white p-8 rounded-lg shadow-md text-center mb-6">
         <p className="text-gray-600">
-          Charts and Tables will appear here
+          System performance charts and usage tables appear below.
         </p>
       </div>
+
+      {/* ✅ CPU & Storage Usage Table */}
+      <SystemUsageTable />
+
+      {/* ✅ Storage Usage Pie Chart */}
+      <StorageUsageChart />
     </main>
   );
 }
