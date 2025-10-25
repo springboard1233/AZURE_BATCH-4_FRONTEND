@@ -3,8 +3,8 @@ import React from "react";
 export default function SystemUsageTable() {
   const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  const cpuUsageData = [40, 55, 60, 70, 65, 75, 90]; // CPU usage %
-  const storageUsageData = [50, 45, 60, 55, 80, 85, 70]; // Storage usage %
+  const cpuUsageData = [40, 55, 60, 70, 65, 75, 90]; 
+  const storageUsageData = [50, 45, 60, 55, 80, 85, 70]; 
 
   return (
     <div className="bg-white shadow-md rounded-2xl p-6 m-6">
