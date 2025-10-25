@@ -1,81 +1,38 @@
-// src/components/SystemUsageTable.jsx
 import React from "react";
 
 export default function SystemUsageTable() {
-  const usageData = [
-    {
-      id: 1,
-      type: "CPU",
-      model: "Intel Core i7-12700K",
-      usage: "45%",
-      temperature: "62°C",
-      cores: 12,
-    },
-    {
-      id: 2,
-      type: "CPU",
-      model: "AMD Ryzen 9 5950X",
-      usage: "57%",
-      temperature: "70°C",
-      cores: 16,
-    },
-    {
-      id: 3,
-      type: "Storage",
-      model: "Samsung 970 EVO Plus SSD",
-      capacity: "1 TB",
-      used: "620 GB",
-      free: "380 GB",
-      usage: "62%",
-    },
-    {
-      id: 4,
-      type: "Storage",
-      model: "Seagate Barracuda HDD",
-      capacity: "2 TB",
-      used: "1.1 TB",
-      free: "0.9 TB",
-      usage: "55%",
-    },
-  ];
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  const cpuUsageData = [40, 55, 60, 70, 65, 75, 90]; // CPU usage %
+  const storageUsageData = [50, 45, 60, 55, 80, 85, 70]; // Storage usage %
 
   return (
     <div className="bg-white shadow-md rounded-2xl p-6 m-6">
       <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-        🖥️ CPU & Storage Usage
+        Weekly CPU & Storage Usage
       </h2>
 
       <div className="overflow-x-auto">
         <table className="min-w-full border border-gray-200 text-sm text-gray-700">
           <thead className="bg-gray-100 text-gray-800 uppercase text-sm">
             <tr>
-              <th className="py-3 px-4 border">ID</th>
-              <th className="py-3 px-4 border">Type</th>
-              <th className="py-3 px-4 border">Model</th>
-              <th className="py-3 px-4 border">Usage</th>
-              <th className="py-3 px-4 border">Temp / Capacity</th>
-              <th className="py-3 px-4 border">Other Details</th>
+              <th className="py-3 px-4 border">Day</th>
+              <th className="py-3 px-4 border">CPU Usage (%)</th>
+              <th className="py-3 px-4 border">Storage Usage (%)</th>
             </tr>
           </thead>
           <tbody>
-            {usageData.map((item) => (
+            {labels.map((day, index) => (
               <tr
-                key={item.id}
+                key={day}
                 className="hover:bg-blue-50 transition-colors duration-200"
               >
-                <td className="py-3 px-4 border">{item.id}</td>
-                <td className="py-3 px-4 border">{item.type}</td>
-                <td className="py-3 px-4 border">{item.model}</td>
+                <td className="py-3 px-4 border">{day}</td>
                 <td className="py-3 px-4 border font-medium text-blue-600">
-                  {item.usage}
+                  {cpuUsageData[index]}%
                 </td>
-                <td className="py-3 px-4 border">
-                  {item.type === "CPU" ? item.temperature : item.capacity}
-                </td>
-                <td className="py-3 px-4 border">
-                  {item.type === "CPU"
-                    ? `${item.cores} cores`
-                    : `Used: ${item.used}, Free: ${item.free}`}
+                <td className="py-3 px-4 border font-medium text-green-600">
+                  {storageUsageData[index]}%
                 </td>
               </tr>
             ))}
