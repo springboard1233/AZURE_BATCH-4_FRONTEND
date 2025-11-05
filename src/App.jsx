@@ -4,12 +4,13 @@ import Sidebar from "./components/Sidebar";
 import UsageTrends from "./pages/UsageTrends";
 import Forecasts from "./pages/Forecasts";
 import Reports from "./pages/Reports";
+import IntroPage from "./pages/IntroPage";
 
 export default function App() {
-  const [page, setPage] = useState("Usage Trends");
+  const [selectedPage, setSelectedPage] = useState("Intro");
 
-  const renderPage = () => {
-    switch (page) {
+  const renderContent = () => {
+    switch (selectedPage) {
       case "Usage Trends":
         return <UsageTrends />;
       case "Forecasts":
@@ -17,16 +18,19 @@ export default function App() {
       case "Reports":
         return <Reports />;
       default:
-        return <UsageTrends />;
+        return <IntroPage />;
     }
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar onSelect={setPage} />
-      <div className="flex-1 flex flex-col">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-4">{renderPage()}</main>
+    <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 transition-all duration-500">
+      {/* Constant Header */}
+      <Header />
+
+      {/* Sidebar + Main Content */}
+      <div className="flex flex-1">
+        <Sidebar onSelect={setSelectedPage} />
+        <main className="flex-1 overflow-y-auto p-6">{renderContent()}</main>
       </div>
     </div>
   );
