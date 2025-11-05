@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { 
   Chart as ChartJS, 
@@ -20,31 +20,48 @@ ChartJS.register(
   Legend
 );
 
+// ...existing code...
+
 export default function Reports() {
   const [activeTab, setActiveTab] = useState('performance');
+  const [performanceData, setPerformanceData] = useState(null);
+  const [forecastData, setForecastData] = useState(null);
 
-  const performanceData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [{
-      label: 'Performance Metrics',
-      data: [65, 75, 70, 80, 85, 90],
-      borderColor: 'rgb(75, 192, 192)',
-      tension: 0.1
-    }]
-  };
+  const perfLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const foreLabels = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  const forecastData = {
-    labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [{
-      label: 'Forecast Metrics',
-      data: [92, 88, 95, 89, 96, 98],
-      borderColor: 'rgb(153, 102, 255)',
-      tension: 0.1
-    }]
-  };
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function generateRandomArray(length, min, max) {
+    return Array.from({ length }, () => randomInt(min, max));
+  }
+
+  useEffect(() => {
+    // Generate new random data on every mount / refresh
+    setPerformanceData({
+      labels: perfLabels,
+      datasets: [{
+        label: 'Performance Metrics',
+        data: generateRandomArray(perfLabels.length, 60, 95),
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1
+      }]
+    });
+
+    setForecastData({
+      labels: foreLabels,
+      datasets: [{
+        label: 'Forecast Metrics',
+        data: generateRandomArray(foreLabels.length, 85, 100),
+        borderColor: 'rgb(153, 102, 255)',
+        tension: 0.1
+      }]
+    });
+  }, []);
 
   const handleDownload = (reportType) => {
-    // Implement download logic here
     alert(`Downloading ${reportType} report...`);
   };
 
@@ -70,7 +87,7 @@ export default function Reports() {
 
       {/* Content Sections */}
       <div className="bg-white p-4 rounded-lg shadow">
-        {activeTab === 'performance' && (
+        {activeTab === 'performance' && performanceData && (
           <div>
             <h3 className="text-lg font-semibold mb-4">Performance Report</h3>
             <div className="h-64 mb-4">
@@ -85,7 +102,7 @@ export default function Reports() {
           </div>
         )}
 
-        {activeTab === 'forecast' && (
+        {activeTab === 'forecast' && forecastData && (
           <div>
             <h3 className="text-lg font-semibold mb-4">Forecast Report</h3>
             <div className="h-64 mb-4">
