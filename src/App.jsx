@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar";
 import UsageTrends from "./pages/UsageTrends";
 import Forecasts from "./pages/Forecasts";
 import Reports from "./pages/Reports";
+import Insights from "./pages/Insights";  // 🔹 New Page
 import IntroPage from "./pages/IntroPage";
 
 export default function App() {
@@ -17,6 +18,8 @@ export default function App() {
         return <Forecasts />;
       case "Reports":
         return <Reports />;
+      case "Insights": // 🔹 New case for Insights
+        return <Insights />;
       default:
         return <IntroPage />;
     }

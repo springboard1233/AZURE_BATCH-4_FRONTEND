@@ -4,18 +4,26 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import ChartCard from "../components/ChartCard";
 
 export default function UsageTrends() {
-  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const regionLabels = ["East", "West", "North", "South"];
+  const weekLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"];
+  const regions = ["East", "West", "North", "South"];
 
-  const [cpuValues, setCpuValues] = useState([]);
+  const [region, setRegion] = useState("East");
+  const [cpuBefore, setCpuBefore] = useState([]);
+  const [cpuAfter, setCpuAfter] = useState([]);
   const [storageValues, setStorageValues] = useState([]);
-  const [regionValues, setRegionValues] = useState([]);
+  const [monthlyValues, setMonthlyValues] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   const chartDescriptions = {
-    cpu: "Shows the average CPU utilization across different regions throughout the week. Higher values indicate increased computational load.",
-    storage: "Displays daily storage consumption patterns. Helps identify peak usage times and plan capacity accordingly.",
-    region: "Illustrates demand distribution across geographical regions, helping identify high-traffic areas.",
+    cpuTrend:
+      "Compares CPU usage trends before and after feature engineering for better forecasting accuracy.",
+    regionTrend:
+      "Shows average CPU usage per selected region throughout the week.",
+    seasonal:
+      "Displays weekly vs. monthly demand variations to visualize seasonal usage patterns.",
   };
 
   function randomInt(min, max) {
@@ -27,51 +35,76 @@ export default function UsageTrends() {
   }
 
   useEffect(() => {
-    setCpuValues(generateRandomArray(labels.length, 30, 95));
-    setStorageValues(generateRandomArray(labels.length, 35, 95));
-    setRegionValues(generateRandomArray(regionLabels.length, 80, 140));
-  }, []);
+    setIsLoading(true);
+
+    // Simulate data fetching (later replace with API call)
+    setTimeout(() => {
+      setCpuBefore(generateRandomArray(weekLabels.length, 30, 80));
+      setCpuAfter(generateRandomArray(weekLabels.length, 50, 95));
+      setStorageValues(generateRandomArray(weekLabels.length, 40, 90));
+      setMonthlyValues(generateRandomArray(monthLabels.length, 45, 100));
+      setIsLoading(false);
+    }, 800);
+  }, [region]);
 
   const charts = [
     {
       id: 1,
-      title: "CPU Usage per Region",
-      labels: labels,
-      dataValues: cpuValues,
-      chartType: "line",
-      description: chartDescriptions.cpu,
+      title: "CPU Usage (Before vs After Feature Engineering)",
+      labels: weekLabels,
+      datasets: [
+        { label: "Before", data: cpuBefore },
+        { label: "After", data: cpuAfter },
+      ],
+      description: chartDescriptions.cpuTrend,
     },
     {
       id: 2,
-      title: "Storage Consumption",
-      labels: labels,
-      dataValues: storageValues,
-      chartType: "bar",
-      description: chartDescriptions.storage,
+      title: `CPU Usage Trend – ${region} Region`,
+      labels: weekLabels,
+      datasets: [{ label: region, data: storageValues }],
+      description: chartDescriptions.regionTrend,
     },
     {
       id: 3,
-      title: "Region-wise Demand",
-      labels: regionLabels,
-      dataValues: regionValues,
-      chartType: "bar",
-      description: chartDescriptions.region,
+      title: "Seasonal Pattern (Weekly vs Monthly)",
+      labels: monthLabels,
+      datasets: [
+        { label: "Weekly Avg", data: cpuBefore.slice(0, 7) },
+        { label: "Monthly Avg", data: monthlyValues },
+      ],
+      description: chartDescriptions.seasonal,
     },
   ];
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % charts.length);
-  };
-
-  const prevSlide = () => {
+  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % charts.length);
+  const prevSlide = () =>
     setCurrentIndex((prev) => (prev - 1 + charts.length) % charts.length);
-  };
 
   return (
     <div className="p-6 flex flex-col items-center bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
-      <h2 className="text-2xl font-bold mb-6 text-center">Usage Trends Overview</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">
+        Interactive Usage Trends
+      </h2>
 
-      <div className="relative w-full max-w-4xl overflow-hidden">
+      {/* Region Selector */}
+      <div className="flex items-center justify-center gap-3 mb-8">
+        <label className="text-sm font-medium">Select Region:</label>
+        <select
+          value={region}
+          onChange={(e) => setRegion(e.target.value)}
+          className="bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-md focus:outline-none"
+        >
+          {regions.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Chart Slider */}
+      <div className="relative w-full max-w-6xl overflow-hidden">
         {/* Left Arrow */}
         <button
           onClick={prevSlide}
@@ -80,29 +113,33 @@ export default function UsageTrends() {
           <FaArrowLeft />
         </button>
 
-        {/* Chart Slide */}
-        <div className="relative h-[600px] flex items-center justify-center md:h-[700px] lg:h-[750px]">
+        {/* Chart Content */}
+        <div className="relative h-[700px] flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={charts[currentIndex].id}
-              initial={{ opacity: 0, x: 80 }}
+              initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -80 }}
+              exit={{ opacity: 0, x: -100 }}
               transition={{ duration: 0.6 }}
               className="absolute w-full flex flex-col items-center"
             >
-              <div className="relative group">
-                <ChartCard
-                  title={charts[currentIndex].title}
-                  labels={charts[currentIndex].labels}
-                  dataValues={charts[currentIndex].dataValues}
-                  chartType={charts[currentIndex].chartType}
-                  large
-                />
-                <div className="invisible group-hover:visible absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white p-3 rounded-md text-sm w-80 text-center shadow-lg">
-                  {charts[currentIndex].description}
+              {isLoading ? (
+                <div className="text-center text-gray-500">Loading data...</div>
+              ) : (
+                <div className="relative group w-full max-w-5xl">
+                  <ChartCard
+                    title={charts[currentIndex].title}
+                    labels={charts[currentIndex].labels}
+                    dataValues={charts[currentIndex].datasets}
+                    multiLine
+                    large
+                  />
+                  <div className="invisible group-hover:visible absolute -bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white p-3 rounded-md text-sm w-96 text-center shadow-lg">
+                    {charts[currentIndex].description}
+                  </div>
                 </div>
-              </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -116,7 +153,7 @@ export default function UsageTrends() {
         </button>
       </div>
 
-      {/* Slide Indicators */}
+      {/* Indicators */}
       <div className="flex space-x-2 mt-6">
         {charts.map((_, i) => (
           <div
