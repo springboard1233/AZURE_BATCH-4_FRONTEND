@@ -1,34 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
-import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  PointElement, 
-  LineElement, 
-  Title, 
-  Legend 
-} from 'chart.js';
-
-// Register ChartJS components
-ChartJS.register(
+import React, { useState, useEffect } from "react";
+import { Line } from "react-chartjs-2";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
   Title,
-  Legend
-);
+  Legend,
+  Tooltip,
+} from "chart.js";
 
-// ...existing code...
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Legend, Tooltip);
 
 export default function Reports() {
-  const [activeTab, setActiveTab] = useState('performance');
+  const [activeTab, setActiveTab] = useState("performance");
   const [performanceData, setPerformanceData] = useState(null);
   const [forecastData, setForecastData] = useState(null);
 
-  const perfLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  const foreLabels = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const perfLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+  const foreLabels = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -39,83 +31,168 @@ export default function Reports() {
   }
 
   useEffect(() => {
-    // Generate new random data on every mount / refresh
     setPerformanceData({
       labels: perfLabels,
-      datasets: [{
-        label: 'Performance Metrics',
-        data: generateRandomArray(perfLabels.length, 60, 95),
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
-      }]
+      datasets: [
+        {
+          label: "Performance Metrics",
+          data: generateRandomArray(perfLabels.length, 60, 95),
+          borderColor: "#0078D4",
+          backgroundColor: "rgba(0,120,212,0.2)",
+          tension: 0.4,
+          fill: true,
+        },
+      ],
     });
 
     setForecastData({
       labels: foreLabels,
-      datasets: [{
-        label: 'Forecast Metrics',
-        data: generateRandomArray(foreLabels.length, 85, 100),
-        borderColor: 'rgb(153, 102, 255)',
-        tension: 0.1
-      }]
+      datasets: [
+        {
+          label: "Forecast Metrics",
+          data: generateRandomArray(foreLabels.length, 85, 100),
+          borderColor: "#9b5de5",
+          backgroundColor: "rgba(155,93,229,0.2)",
+          tension: 0.4,
+          fill: true,
+        },
+      ],
     });
   }, []);
 
-  const handleDownload = (reportType) => {
-    alert(`Downloading ${reportType} report...`);
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: "top",
+        labels: {
+          color: "#6b7280",
+          font: { size: 13, weight: "500" },
+        },
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: "#6b7280" },
+        grid: { color: "rgba(107,114,128,0.1)" },
+      },
+      y: {
+        ticks: { color: "#6b7280" },
+        grid: { color: "rgba(107,114,128,0.1)" },
+      },
+    },
+  };
+
+  const handleDownload = (type) => {
+    alert(`📊 Downloading ${type} report...`);
+  };
+
+  const tabs = [
+    { id: "performance", label: "Performance", color: "from-blue-500 to-teal-400" },
+    { id: "forecast", label: "Forecast", color: "from-purple-500 to-pink-400" },
+  ];
+
+  const tabTransition = {
+    hidden: { opacity: 0, y: 30 },
+    enter: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+    exit: { opacity: 0, y: -30, transition: { duration: 0.4, ease: "easeIn" } },
   };
 
   return (
-    <div className="p-4 text-gray-700">
-      <h2 className="text-xl font-bold mb-4">REPORTS SECTION</h2>
-      
-      {/* Tab Navigation */}
-      <div className="flex gap-4 mb-4">
-        <button
-          className={`px-4 py-2 rounded ${activeTab === 'performance' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveTab('performance')}
-        >
-          Performance
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${activeTab === 'forecast' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-          onClick={() => setActiveTab('forecast')}
-        >
-          Forecast
-        </button>
+    <div className="p-8 min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 transition-all duration-700">
+      <motion.h2
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-3xl font-bold text-center mb-10 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-400"
+      >
+        📈 Analytics & Reports Dashboard
+      </motion.h2>
+
+      {/* Tabs */}
+      <div className="flex justify-center gap-6 mb-8">
+        {tabs.map((tab) => (
+          <motion.button
+            key={tab.id}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-6 py-2.5 font-semibold rounded-full transition-all duration-300 shadow-md ${
+              activeTab === tab.id
+                ? `bg-gradient-to-r ${tab.color} text-white shadow-lg`
+                : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+            }`}
+          >
+            {tab.label}
+          </motion.button>
+        ))}
       </div>
 
-      {/* Content Sections */}
-      <div className="bg-white p-4 rounded-lg shadow">
-        {activeTab === 'performance' && performanceData && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Performance Report</h3>
-            <div className="h-64 mb-4">
-              <Line data={performanceData} options={{ responsive: true, maintainAspectRatio: false }} />
-            </div>
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              onClick={() => handleDownload('performance')}
+      {/* Animated Content */}
+      <div className="max-w-5xl mx-auto bg-white/80 dark:bg-gray-800/70 backdrop-blur-md rounded-2xl shadow-xl p-6 overflow-hidden">
+        <AnimatePresence mode="wait">
+          {activeTab === "performance" && performanceData && (
+            <motion.div
+              key="performance"
+              variants={tabTransition}
+              initial="hidden"
+              animate="enter"
+              exit="exit"
             >
-              Download Performance Report
-            </button>
-          </div>
-        )}
+              <h3 className="text-2xl font-semibold mb-2 text-blue-600 dark:text-blue-400">
+                Performance Overview
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                This report visualizes system performance trends for the past 6 months.
+              </p>
 
-        {activeTab === 'forecast' && forecastData && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Forecast Report</h3>
-            <div className="h-64 mb-4">
-              <Line data={forecastData} options={{ responsive: true, maintainAspectRatio: false }} />
-            </div>
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              onClick={() => handleDownload('forecast')}
+              <div className="h-80 mb-6">
+                <Line data={performanceData} options={chartOptions} />
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => handleDownload("Performance")}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-md transition"
+              >
+                ⬇️ Download Performance Report
+              </motion.button>
+            </motion.div>
+          )}
+
+          {activeTab === "forecast" && forecastData && (
+            <motion.div
+              key="forecast"
+              variants={tabTransition}
+              initial="hidden"
+              animate="enter"
+              exit="exit"
             >
-              Download Forecast Report
-            </button>
-          </div>
-        )}
+              <h3 className="text-2xl font-semibold mb-2 text-purple-600 dark:text-purple-400">
+                Forecast Insights
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                This section provides predictive analytics based on AI-powered forecasts.
+              </p>
+
+              <div className="h-80 mb-6">
+                <Line data={forecastData} options={chartOptions} />
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => handleDownload("Forecast")}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium shadow-md transition"
+              >
+                ⬇️ Download Forecast Report
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

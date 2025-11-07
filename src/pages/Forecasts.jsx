@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,26 +13,27 @@ import {
   Cell,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, Cpu, HardDrive, Network } from "lucide-react";
 
 /**
- * Forecasts.jsx
- * - Slideshow style: one metric shown at a time
- * - Dual chart per metric (Pie + Line)
- * - Optimization recommendations included (context-aware highlight)
- * - Framer Motion animations + Recharts visuals
+ * Forecasts.jsx - Elegant slideshow + timeline optimizations
+ *
+ * - Auto-slide with manual Next / Previous
+ * - Gradient cards for each metric (pie + line)
+ * - Optimization Insights as a vertical timeline (line + dots)
+ * - Sequential animations for timeline items
  */
 
 export default function Forecasts() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // --- simulated metrics (replace with API data later) ---
+  // ----- simulated metrics (replace with API later) -----
   const metrics = useMemo(() => {
     const randPercent = (min, max) => Math.round(Math.random() * (max - min) + min);
 
     const cpuCurrent = randPercent(55, 80);
     const cpuForecast = Array.from({ length: 7 }, (_, i) =>
-      Math.round(cpuCurrent + i * randPercent(1, 4))
+      Math.round(cpuCurrent + i * randPercent(1, 3))
     );
 
     const storageCurrent = Number((Math.random() * 0.9 + 2.0).toFixed(2));
@@ -41,14 +42,15 @@ export default function Forecasts() {
       Number((storageCurrent + i * ((storageNext - storageCurrent) / 6)).toFixed(2))
     );
 
-    const netCurrent = randPercent(600, 920);
+    const netCurrent = randPercent(600, 900);
     const netForecast = Array.from({ length: 7 }, (_, i) =>
-      Math.round(netCurrent + i * randPercent(10, 40))
+      Math.round(netCurrent + i * randPercent(10, 30))
     );
 
     return [
       {
         id: "cpu",
+        icon: <Cpu className="w-6 h-6 text-white/90" />,
         title: "CPU Demand",
         unit: "%",
         current: cpuCurrent,
@@ -57,9 +59,12 @@ export default function Forecasts() {
           { name: "Used", value: cpuCurrent },
           { name: "Remaining", value: 100 - cpuCurrent },
         ],
+        gradientFrom: "from-blue-600",
+        gradientTo: "to-teal-400",
       },
       {
         id: "storage",
+        icon: <HardDrive className="w-6 h-6 text-white/90" />,
         title: "Storage Usage",
         unit: "TB",
         current: storageCurrent,
@@ -71,9 +76,12 @@ export default function Forecasts() {
             { name: "Remaining", value: Math.max(0, 100 - usedPercent) },
           ];
         })(),
+        gradientFrom: "from-purple-600",
+        gradientTo: "to-pink-400",
       },
       {
         id: "network",
+        icon: <Network className="w-6 h-6 text-white/90" />,
         title: "Network Bandwidth",
         unit: "Mbps",
         current: netCurrent,
@@ -86,167 +94,244 @@ export default function Forecasts() {
             { name: "Remaining", value: Math.max(0, 100 - usedPercent) },
           ];
         })(),
+        gradientFrom: "from-green-500",
+        gradientTo: "to-lime-400",
       },
     ];
   }, []);
 
+  // auto-slide every 9s
+  useEffect(() => {
+    const t = setInterval(() => setCurrentSlide((p) => (p + 1) % metrics.length), 9000);
+    return () => clearInterval(t);
+  }, [metrics.length]);
+
+  // Optimizations (timeline items)
   const optimizations = [
     {
+      id: "opt-cpu",
       title: "Auto-scale CPU",
       description:
-        "Enable auto-scaling for east-region CPU clusters during predicted peak weeks.",
+        "Enable auto-scaling for east-region CPU clusters during predicted peak weeks. Configure conservative cooldown and step scaling policies.",
       impact: "High",
-      forMetric: "cpu",
+      metric: "cpu",
+      date: "2025-11-01",
     },
     {
+      id: "opt-storage",
       title: "Storage Rightsizing",
-      description: "Reclaim unused storage and move cold data to cheaper tiers.",
+      description:
+        "Reclaim unused storage, identify cold data and migrate to cheaper tiers (Archive/Blob Cool). Run lifecycle policies weekly.",
       impact: "Medium",
-      forMetric: "storage",
+      metric: "storage",
+      date: "2025-10-18",
     },
     {
+      id: "opt-network",
       title: "Network QoS Tuning",
-      description: "Adjust QoS rules to prioritize traffic and reduce latency spikes.",
+      description:
+        "Adjust QoS rules to prioritize critical traffic, apply burst controls on non-critical flows and reduce latency spikes.",
       impact: "Low",
-      forMetric: "network",
+      metric: "network",
+      date: "2025-10-10",
     },
   ];
 
-  const COLORS = ["#0078D4", "#00B294"];
+  const COLORS = ["#00B5D8", "#E2E8F0"];
+
   const makeLineData = (forecast) => forecast.map((v, i) => ({ name: `Week ${i + 1}`, value: v }));
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % metrics.length);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + metrics.length) % metrics.length);
-
-  const cardAnim = {
-    hidden: { opacity: 0, x: 80 },
-    enter: { opacity: 1, x: 0, transition: { duration: 0.6 } },
-    exit: { opacity: 0, x: -80, transition: { duration: 0.6 } },
+  // framer variants
+  const slideVariants = {
+    hidden: { opacity: 0, x: 80, scale: 0.98 },
+    enter: { opacity: 1, x: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" } },
+    exit: { opacity: 0, x: -80, scale: 0.98, transition: { duration: 0.6, ease: "easeIn" } },
   };
 
+  const timelineItemVariants = {
+    hidden: { opacity: 0, y: 18 },
+    visible: (i) => ({ opacity: 1, y: 0, transition: { delay: 0.12 * i, duration: 0.45 } }),
+  };
+
+  const nextSlide = () => setCurrentSlide((p) => (p + 1) % metrics.length);
+  const prevSlide = () => setCurrentSlide((p) => (p - 1 + metrics.length) % metrics.length);
+
   return (
-    <div className="p-6 flex flex-col items-center min-h-screen dark:bg-gray-900 transition-all duration-300">
+    <div className="p-6 md:p-8 lg:p-10 min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 transition-colors duration-500">
       <motion.h1
-        initial={{ opacity: 0, y: -8 }}
+        initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-400 text-center"
+        className="text-3xl md:text-4xl font-extrabold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-400"
       >
         Azure Demand Forecasting
       </motion.h1>
 
       {/* slideshow container */}
-      <div className="w-full max-w-5xl relative">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={metrics[currentSlide].id}
-            variants={cardAnim}
-            initial="hidden"
-            animate="enter"
-            exit="exit"
-          >
-            <ForecastCard metric={metrics[currentSlide]} COLORS={COLORS} makeLineData={makeLineData} />
-          </motion.div>
-        </AnimatePresence>
+      <div className="max-w-6xl mx-auto">
+        <div className="relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={metrics[currentSlide].id}
+              variants={slideVariants}
+              initial="hidden"
+              animate="enter"
+              exit="exit"
+              className="w-full"
+            >
+              <ForecastCard
+                metric={metrics[currentSlide]}
+                COLORS={COLORS}
+                makeLineData={makeLineData}
+              />
+            </motion.div>
+          </AnimatePresence>
 
-        {/* nav and slide counter */}
-        <div className="flex items-center justify-between mt-6">
-          <button
-            onClick={prevSlide}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-          >
-            ← Previous
-          </button>
+          {/* nav controls */}
+          <div className="flex items-center justify-between mt-6">
+            <button
+              onClick={prevSlide}
+              className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm transition"
+            >
+              ← Previous
+            </button>
 
-          <div className="text-gray-600 dark:text-gray-300 font-medium">
-            {currentSlide + 1} / {metrics.length}
+            <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+              {currentSlide + 1} / {metrics.length}
+            </div>
+
+            <button
+              onClick={nextSlide}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-md transition"
+            >
+              Next →
+            </button>
           </div>
-
-          <button
-            onClick={nextSlide}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
-          >
-            Next →
-          </button>
         </div>
-      </div>
 
-      {/* Optimizations section (restored) */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.15 }}
-        className="w-full max-w-5xl mt-8"
-      >
-        <h3 className="text-xl font-semibold mb-4">Optimization Recommendations</h3>
+        {/* timeline - neat vertical list */}
+        <div className="mt-12 max-w-3xl mx-auto">
+          <h3 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Optimization Insights</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {optimizations.map((opt, i) => {
-            const isActive = opt.forMetric === metrics[currentSlide].id;
-            return (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.02 }}
-                className={`rounded-xl p-4 shadow-md transition ${
-                  isActive
-                    ? "ring-2 ring-blue-400/40 bg-white/80 dark:bg-gray-800/60"
-                    : "bg-white/60 dark:bg-gray-800/50"
-                }`}
-              >
-                <div className="flex justify-between items-start gap-4">
-                  <div>
-                    <h4 className="font-semibold">{opt.title}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{opt.description}</p>
-                  </div>
+          <div className="relative pl-8">
+            {/* vertical line */}
+            <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700 rounded" />
 
-                  <div className="text-right">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        opt.impact === "High"
-                          ? "bg-red-100 text-red-800"
-                          : opt.impact === "Medium"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
+            <ul className="space-y-8">
+              {optimizations.map((opt, i) => {
+                const active = opt.metric === metrics[currentSlide].id;
+                return (
+                  <motion.li
+                    key={opt.id}
+                    custom={i}
+                    initial="hidden"
+                    animate="visible"
+                    variants={timelineItemVariants}
+                    className="relative"
+                  >
+                    {/* dot */}
+                    <div
+                      className={`absolute -left-4 top-1 w-3 h-3 rounded-full border-2 ${
+                        active ? "bg-blue-500 border-blue-600" : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600"
+                      }`}
+                    />
+                    <div
+                      className={`pl-6 py-4 pr-4 rounded-xl shadow-sm transition-all ${
+                        active ? "bg-white dark:bg-gray-800 ring-1 ring-blue-200/50" : "bg-white/80 dark:bg-gray-800/60"
                       }`}
                     >
-                      {opt.impact}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{opt.title}</h4>
+                          <div className="text-xs text-gray-500 mt-1">{opt.date}</div>
+                        </div>
+
+                        <div className="text-right">
+                          <span
+                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                              opt.impact === "High"
+                                ? "bg-red-100 text-red-800"
+                                : opt.impact === "Medium"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-green-100 text-green-800"
+                            }`}
+                          >
+                            {opt.impact}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">{opt.description}</p>
+
+                      {/* small CTA to highlight context-aware action */}
+                      <div className="mt-3 flex items-center gap-3">
+                        <button
+                          onClick={() => setCurrentSlide(metrics.findIndex((m) => m.id === opt.metric))}
+                          className={`text-sm px-3 py-1 rounded-md font-medium transition ${
+                            active
+                              ? "bg-blue-50 text-blue-700 border border-blue-100"
+                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-200"
+                          }`}
+                        >
+                          View related metric
+                        </button>
+
+                        <a
+                          href="#"
+                          onClick={(e) => e.preventDefault()}
+                          className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        >
+                          Learn more →
+                        </a>
+                      </div>
+                    </div>
+                  </motion.li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
 
-/* ----- ForecastCard (keeps original dual-chart look) ----- */
+/* ----- ForecastCard component ----- */
 function ForecastCard({ metric: m, COLORS, makeLineData }) {
+  // choose background classes dynamically
+  const bgFrom = m.gradientFrom || "from-blue-600";
+  const bgTo = m.gradientTo || "to-teal-400";
+
   return (
-    <motion.div
-      className="rounded-2xl shadow-xl p-6 bg-gradient-to-br from-white/90 to-sky-50/80 dark:from-gray-800 dark:to-gray-900 overflow-hidden"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+    <div
+      className={`rounded-2xl p-6 md:p-8 shadow-xl overflow-hidden bg-gradient-to-r ${bgFrom} ${bgTo} text-white`}
+      style={{ minHeight: 280 }}
     >
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{m.title}</h2>
-        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-teal-100 text-gray-700 dark:text-gray-300">
-          Forecast
-        </span>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center">
+            {m.icon}
+          </div>
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold">{m.title}</h2>
+            <div className="text-sm opacity-90 mt-1">Forecast Overview</div>
+          </div>
+        </div>
+
+        <div className="text-right">
+          <div className="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-semibold">Forecast</div>
+        </div>
       </div>
 
-      <div className="mt-6 flex flex-col md:flex-row items-center md:items-stretch gap-6">
-        {/* Pie */}
-        <div className="w-full md:w-1/3 flex flex-col items-center">
+      <div className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+        {/* Pie / donut */}
+        <div className="flex flex-col items-center md:items-start md:justify-center">
           <PieChart width={160} height={160}>
             <Pie
               data={m.pie}
               cx="50%"
               cy="50%"
-              innerRadius={44}
+              innerRadius={46}
               outerRadius={72}
               paddingAngle={6}
               dataKey="value"
@@ -254,65 +339,63 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
               label={({ percent }) => `${Math.round(percent * 100)}%`}
             >
               {m.pie.map((entry, i) => (
-                <Cell key={`c-${i}`} fill={COLORS[i % COLORS.length]} stroke="#fff" />
+                <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="#ffffff" strokeWidth={1} />
               ))}
             </Pie>
           </PieChart>
 
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex items-center gap-3">
             {m.forecast[m.forecast.length - 1] >= m.current ? (
-              <ArrowUpCircle className="text-green-500 w-6 h-6" />
+              <ArrowUpCircle className="w-5 h-5 text-white/90" />
             ) : (
-              <ArrowDownCircle className="text-red-500 w-6 h-6" />
+              <ArrowDownCircle className="w-5 h-5 text-white/90" />
             )}
             <div>
-              <div className="text-sm text-gray-500">Current</div>
-              <div className="text-lg font-semibold">
-                {m.current} {m.unit}
-              </div>
+              <div className="text-xs text-white/90">Current</div>
+              <div className="text-xl md:text-2xl font-bold">{m.current} {m.unit}</div>
             </div>
           </div>
         </div>
 
-        {/* Line */}
-        <div className="w-full md:w-2/3">
-          <div className="bg-white/60 dark:bg-gray-800/50 rounded-lg p-3 h-[180px]">
+        {/* blank column for spacing on small screens (keeps layout balanced) */}
+        <div className="hidden md:block" />
+
+        {/* Line chart */}
+        <div className="md:col-span-2 bg-white/10 rounded-lg p-3 md:p-4">
+          <div className="h-44 md:h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={makeLineData(m.forecast)}>
                 <defs>
                   <linearGradient id={`grad-${m.id}`} x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#0078D4" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#00B294" stopOpacity={1} />
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity={0.6} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e6eef6" />
-                <XAxis dataKey="name" tick={{ fill: "#6b7280" }} />
-                <YAxis tick={{ fill: "#6b7280" }} />
-                <ReTooltip contentStyle={{ background: "#fff", borderRadius: 8, border: "none" }} />
-                <ReLegend verticalAlign="bottom" height={20} />
+
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.8)" }} />
+                <YAxis tick={{ fill: "rgba(255,255,255,0.8)" }} />
+                <ReTooltip contentStyle={{ background: "#0b1220", borderRadius: 8, color: "#fff" }} />
+                <ReLegend verticalAlign="bottom" height={16} wrapperStyle={{ color: "rgba(255,255,255,0.85)" }} />
+
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke={`url(#grad-${m.id})`}
+                  stroke="white"
                   strokeWidth={3}
-                  dot={{ r: 4, stroke: "#fff" }}
+                  dot={{ r: 3, stroke: "#fff" }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="mt-2 flex justify-between items-center text-sm text-gray-600">
+          <div className="mt-3 text-sm text-white/90 flex items-center justify-between">
             <div>7-week projection</div>
-            <div className="text-right">
-              <div className="text-xs">Projected (wk7)</div>
-              <div className="font-semibold">
-                {Array.isArray(m.forecast) ? m.forecast[m.forecast.length - 1] : "-"} {m.unit}
-              </div>
-            </div>
+            <div className="font-semibold">{Array.isArray(m.forecast) ? m.forecast[m.forecast.length - 1] : "-"} {m.unit}</div>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
