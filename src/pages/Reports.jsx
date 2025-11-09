@@ -108,7 +108,7 @@ export default function Reports() {
         transition={{ duration: 0.6 }}
         className="text-3xl font-bold text-center mb-10 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-400"
       >
-        📈 Analytics & Reports Dashboard
+         Analytics & Reports Dashboard
       </motion.h2>
 
       {/* Tabs */}

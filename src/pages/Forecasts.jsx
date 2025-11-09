@@ -15,19 +15,11 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpCircle, ArrowDownCircle, Cpu, HardDrive, Network } from "lucide-react";
 
-/**
- * Forecasts.jsx - Elegant slideshow + timeline optimizations
- *
- * - Auto-slide with manual Next / Previous
- * - Gradient cards for each metric (pie + line)
- * - Optimization Insights as a vertical timeline (line + dots)
- * - Sequential animations for timeline items
- */
-
+// Main component
 export default function Forecasts() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeOpt, setActiveOpt] = useState(null);
 
-  // ----- simulated metrics (replace with API later) -----
   const metrics = useMemo(() => {
     const randPercent = (min, max) => Math.round(Math.random() * (max - min) + min);
 
@@ -59,8 +51,8 @@ export default function Forecasts() {
           { name: "Used", value: cpuCurrent },
           { name: "Remaining", value: 100 - cpuCurrent },
         ],
-        gradientFrom: "from-blue-600",
-        gradientTo: "to-teal-400",
+        gradientFrom: "from-blue-500",
+        gradientTo: "to-blue-400",
       },
       {
         id: "storage",
@@ -76,8 +68,8 @@ export default function Forecasts() {
             { name: "Remaining", value: Math.max(0, 100 - usedPercent) },
           ];
         })(),
-        gradientFrom: "from-purple-600",
-        gradientTo: "to-pink-400",
+        gradientFrom: "from-blue-500",
+        gradientTo: "to-blue-400",
       },
       {
         id: "network",
@@ -94,8 +86,8 @@ export default function Forecasts() {
             { name: "Remaining", value: Math.max(0, 100 - usedPercent) },
           ];
         })(),
-        gradientFrom: "from-green-500",
-        gradientTo: "to-lime-400",
+        gradientFrom: "from-blue-500",
+        gradientTo: "to-blue-400",
       },
     ];
   }, []);
@@ -130,7 +122,7 @@ export default function Forecasts() {
       id: "opt-network",
       title: "Network QoS Tuning",
       description:
-        "Adjust QoS rules to prioritize critical traffic, apply burst controls on non-critical flows and reduce latency spikes.",
+        "Adjust QoS(Quality of Service) rules to prioritize critical traffic, apply burst controls on non-critical flows and reduce latency spikes.",
       impact: "Low",
       metric: "network",
       date: "2025-10-10",
@@ -139,18 +131,33 @@ export default function Forecasts() {
 
   const COLORS = ["#00B5D8", "#E2E8F0"];
 
-  const makeLineData = (forecast) => forecast.map((v, i) => ({ name: `Week ${i + 1}`, value: v }));
+  const makeLineData = (forecast) =>
+    forecast.map((v, i) => ({ name: `Week ${i + 1}`, value: v }));
 
   // framer variants
   const slideVariants = {
     hidden: { opacity: 0, x: 80, scale: 0.98 },
-    enter: { opacity: 1, x: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" } },
-    exit: { opacity: 0, x: -80, scale: 0.98, transition: { duration: 0.6, ease: "easeIn" } },
+    enter: {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      transition: { duration: 0.7, ease: "easeOut" },
+    },
+    exit: {
+      opacity: 0,
+      x: -80,
+      scale: 0.98,
+      transition: { duration: 0.6, ease: "easeIn" },
+    },
   };
 
   const timelineItemVariants = {
     hidden: { opacity: 0, y: 18 },
-    visible: (i) => ({ opacity: 1, y: 0, transition: { delay: 0.12 * i, duration: 0.45 } }),
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: 0.12 * i, duration: 0.45 },
+    }),
   };
 
   const nextSlide = () => setCurrentSlide((p) => (p + 1) % metrics.length);
@@ -195,11 +202,9 @@ export default function Forecasts() {
             >
               ← Previous
             </button>
-
             <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">
               {currentSlide + 1} / {metrics.length}
             </div>
-
             <button
               onClick={nextSlide}
               className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-md transition"
@@ -220,6 +225,7 @@ export default function Forecasts() {
             <ul className="space-y-8">
               {optimizations.map((opt, i) => {
                 const active = opt.metric === metrics[currentSlide].id;
+                const expanded = activeOpt === opt.id;
                 return (
                   <motion.li
                     key={opt.id}
@@ -236,16 +242,16 @@ export default function Forecasts() {
                       }`}
                     />
                     <div
-                      className={`pl-6 py-4 pr-4 rounded-xl shadow-sm transition-all ${
+                      className={`pl-6 py-4 pr-4 rounded-xl shadow-sm transition-all cursor-pointer ${
                         active ? "bg-white dark:bg-gray-800 ring-1 ring-blue-200/50" : "bg-white/80 dark:bg-gray-800/60"
                       }`}
+                      onClick={() => setActiveOpt(expanded ? null : opt.id)}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{opt.title}</h4>
                           <div className="text-xs text-gray-500 mt-1">{opt.date}</div>
                         </div>
-
                         <div className="text-right">
                           <span
                             className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
@@ -260,31 +266,34 @@ export default function Forecasts() {
                           </span>
                         </div>
                       </div>
-
-                      <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">{opt.description}</p>
-
-                      {/* small CTA to highlight context-aware action */}
-                      <div className="mt-3 flex items-center gap-3">
-                        <button
-                          onClick={() => setCurrentSlide(metrics.findIndex((m) => m.id === opt.metric))}
-                          className={`text-sm px-3 py-1 rounded-md font-medium transition ${
-                            active
-                              ? "bg-blue-50 text-blue-700 border border-blue-100"
-                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-200"
-                          }`}
-                        >
-                          View related metric
-                        </button>
-
-                        <a
-                          href="#"
-                          onClick={(e) => e.preventDefault()}
-                          className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                        >
-                          Learn more →
-                        </a>
-                      </div>
+                      {/* Only show summary; expanded details show below */}
                     </div>
+                    {expanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className={`pl-6 pr-4 pt-3 pb-4 mt-0.5 mb-0 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-blue-100 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-200`}
+                      >
+                        <div><span className="font-semibold">Description:</span> {opt.description}</div>
+                        <div className="mt-2"><span className="font-semibold">Impact:</span> {opt.impact}</div>
+                        <div className="mt-2 flex items-center gap-3">
+                          <button
+                            onClick={() => setCurrentSlide(metrics.findIndex((m) => m.id === opt.metric))}
+                            className="text-sm px-3 py-1 rounded-md font-medium bg-blue-50 text-blue-700 border border-blue-100"
+                          >
+                            View related metric
+                          </button>
+                          <a
+                            href="#"
+                            onClick={(e) => e.preventDefault()}
+                            className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                          >
+                            Learn more →
+                          </a>
+                        </div>
+                      </motion.div>
+                    )}
                   </motion.li>
                 );
               })}
@@ -317,7 +326,6 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
             <div className="text-sm opacity-90 mt-1">Forecast Overview</div>
           </div>
         </div>
-
         <div className="text-right">
           <div className="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-semibold">Forecast</div>
         </div>
@@ -371,13 +379,11 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
                     <stop offset="100%" stopColor="#ffffff" stopOpacity={0.6} />
                   </linearGradient>
                 </defs>
-
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                 <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.8)" }} />
                 <YAxis tick={{ fill: "rgba(255,255,255,0.8)" }} />
                 <ReTooltip contentStyle={{ background: "#0b1220", borderRadius: 8, color: "#fff" }} />
                 <ReLegend verticalAlign="bottom" height={16} wrapperStyle={{ color: "rgba(255,255,255,0.85)" }} />
-
                 <Line
                   type="monotone"
                   dataKey="value"
@@ -391,7 +397,7 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
           </div>
 
           <div className="mt-3 text-sm text-white/90 flex items-center justify-between">
-            <div>7-week projection</div>
+            <div>7-Week projection</div>
             <div className="font-semibold">{Array.isArray(m.forecast) ? m.forecast[m.forecast.length - 1] : "-"} {m.unit}</div>
           </div>
         </div>
