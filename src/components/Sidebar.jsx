@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import {
-  FaChartLine,
-  FaRegFileAlt,
-  FaClipboardList,
-  FaBars,
-  FaTimes,
-} from "react-icons/fa";
+  BarChart3,
+  FileText,
+  ClipboardCheck,
+  Menu,
+  X,
+  Activity,
+} from "lucide-react";
 
 export default function Sidebar({ onSelect }) {
   const [active, setActive] = useState("Usage Trends");
@@ -14,88 +15,100 @@ export default function Sidebar({ onSelect }) {
   const handleSelect = (page) => {
     setActive(page);
     onSelect(page);
-    if (window.innerWidth < 1024) setIsOpen(false); // auto close on mobile
+    if (window.innerWidth < 1024) setIsOpen(false);
   };
 
   const menuItems = [
-    { name: "Usage Trends", icon: <FaChartLine /> },
-    { name: "Forecasts", icon: <FaRegFileAlt /> },
-    { name: "Reports", icon: <FaClipboardList /> },
+    { name: "Usage Trends", icon: BarChart3 },
+    { name: "Forecasts", icon: Activity },
+    { name: "Reports", icon: ClipboardCheck },
   ];
 
-  // Disable scroll on mobile when sidebar open
   useEffect(() => {
-    if (isOpen) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "auto";
+    document.body.style.overflow = isOpen ? "hidden" : "auto";
   }, [isOpen]);
 
   return (
     <>
-      {/* Mobile Menu Toggle */}
+      {/* Mobile Toggle */}
       <button
         className="lg:hidden fixed top-5 left-5 z-50 text-white bg-gradient-to-br 
-          from-blue-600 to-indigo-600 p-3 rounded-lg shadow-lg transition-all 
+          from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg transition-all 
           duration-300 hover:scale-105 focus:outline-none"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+        {isOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static top-0 left-0 h-full w-64 bg-gradient-to-b 
-          from-gray-900 via-gray-800 to-gray-900 text-gray-100 p-5 shadow-2xl 
-          border-r border-gray-700 flex flex-col justify-between transform 
-          transition-transform duration-500 ease-in-out z-40 
+        className={`group fixed lg:static top-0 left-0 h-full w-64 lg:w-20 hover:lg:w-64 
+          bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100 p-5 shadow-2xl 
+          border-r border-gray-800 flex flex-col justify-between transform 
+          transition-all duration-300 ease-in-out z-40 
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
-        {/* Logo Section */}
+        {/* Logo */}
         <div>
           <div className="flex items-center justify-center gap-3 mb-10">
-            <div className="w-10 h-10 flex items-center justify-center rounded-xl 
+            <div className="w-10 h-10 flex items-center justify-center rounded-2xl 
               bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
               <span className="text-lg font-bold text-white">A</span>
             </div>
-            <h2 className="text-xl font-semibold tracking-wide">Azure Panel</h2>
+            <h2 className="text-xl font-semibold tracking-wide transition-all duration-300 
+              opacity-100 lg:opacity-0 group-hover:lg:opacity-100 whitespace-nowrap overflow-hidden">
+              Azure Panel
+            </h2>
           </div>
 
-          {/* Navigation Menu */}
+          {/* Navigation */}
           <nav className="space-y-2">
-            {menuItems.map(({ name, icon }) => (
+            {menuItems.map(({ name, icon: Icon }) => (
               <button
                 key={name}
                 onClick={() => handleSelect(name)}
                 className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left 
-                  font-medium transition-all duration-300 ${
+                  font-medium transition-all duration-300 justify-start 
+                  lg:justify-center group-hover:lg:justify-start ${
                     active === name
                       ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md scale-[1.02]"
-                      : "text-gray-300 hover:text-white hover:bg-gray-700"
+                      : "text-gray-400 hover:text-white hover:bg-gray-800"
                   }`}
               >
-                <span
-                  className={`text-lg transition-transform duration-300 ${
-                    active === name ? "scale-110" : "group-hover:scale-110"
+                <div
+                  className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
+                    active === name
+                      ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg"
+                      : "bg-gray-800 text-gray-300 group-hover:text-white"
                   }`}
                 >
-                  {icon}
+                  <Icon size={18} strokeWidth={2} />
+                </div>
+                <span
+                  className={
+                    "ml-2 transition-all duration-300 overflow-hidden whitespace-nowrap " +
+                    "lg:max-w-0 group-hover:lg:max-w-xs lg:opacity-0 group-hover:lg:opacity-100"
+                  }
+                >
+                  {name}
                 </span>
-                <span>{name}</span>
               </button>
             ))}
           </nav>
         </div>
 
         {/* Footer */}
-        <footer className="mt-10 text-sm text-gray-500 text-center opacity-70">
-          © 2025 Azure Forecast
+        <footer className="mt-10 text-sm text-gray-500 text-center opacity-70 transition-all duration-300">
+          <span className="inline-block lg:opacity-0 group-hover:lg:opacity-100">
+            © 2025 Azure Forecast
+          </span>
         </footer>
       </aside>
 
-      {/* Overlay when sidebar open on mobile */}
+      {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm lg:hidden z-30 
-            transition-opacity duration-500"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm lg:hidden z-30 transition-opacity duration-500"
           onClick={() => setIsOpen(false)}
         ></div>
       )}
