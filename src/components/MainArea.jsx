@@ -1,22 +1,14 @@
 export default function MainArea() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-      <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-        <h3 className="text-lg font-semibold">Active Subscriptions</h3>
-        <p className="text-gray-600 mt-2">134 running workloads</p>
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Welcome
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Select a page from the sidebar to view Usage Trends, Forecasts, or Reports.
+        </p>
       </div>
-
-      <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-        <h3 className="text-lg font-semibold">Monthly Spend</h3>
-        <p className="text-gray-600 mt-2">$12,420 this month</p>
-      </div>
-
-      <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-        <h3 className="text-lg font-semibold">Alerts</h3>
-        <p className="text-gray-600 mt-2">3 active alerts</p>
-      </div>
-
     </div>
   );
 }
