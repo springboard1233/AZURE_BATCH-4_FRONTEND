@@ -1,28 +1,22 @@
-import React from "react";
-import ChartCard from "../components/ChartCard";
-import SystemUsageTable from "../components/Table";
-
 export default function MainArea() {
-  
-  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-  const cpuData = [40, 55, 60, 70, 65, 75, 90];     
-  const storageData = [50, 45, 60, 55, 80, 85, 70];  
-
   return (
-    <main className="flex-1 p-8 bg-gray-100 h-screen overflow-y-auto">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-        Dashboard Overview
-      </h2>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-      
-      <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <ChartCard title="CPU Usage (%)" labels={labels} dataValues={cpuData} />
-        
+      <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <h3 className="text-lg font-semibold">Active Subscriptions</h3>
+        <p className="text-gray-600 mt-2">134 running workloads</p>
       </div>
 
-     
-      <SystemUsageTable labels={labels} cpuData={cpuData} storageData={storageData} />
-    </main>
+      <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <h3 className="text-lg font-semibold">Monthly Spend</h3>
+        <p className="text-gray-600 mt-2">$12,420 this month</p>
+      </div>
+
+      <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <h3 className="text-lg font-semibold">Alerts</h3>
+        <p className="text-gray-600 mt-2">3 active alerts</p>
+      </div>
+
+    </div>
   );
 }

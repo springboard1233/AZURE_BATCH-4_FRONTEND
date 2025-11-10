@@ -1,29 +1,34 @@
-import { useState } from "react";
-
-export default function Sidebar({ onSelect }) {
-  const [active, setActive] = useState("Dashboard Overview");
-
-  const handleSelect = (page) => {
-    setActive(page);
-    onSelect(page);
-  };
-
-  const menuItems = ["Dashboard Overview", "Usage Trends", "Forecasts", "Reports"];
+export default function Sidebar({ onSelect, selected }) {
+  const items = [
+    "Dashboard Overview",
+    "Usage Trends",
+    "Forecasts",
+    "Reports",
+  ];
 
   return (
-    <aside className="bg-gray-800 text-white w-64 h-screen p-4">
-      <nav className="space-y-4">
-        {menuItems.map((item) => (
-          <button
-            key={item}
-            onClick={() => handleSelect(item)}
-            className={`block w-full text-left px-4 py-2 rounded ${
-              active === item ? "bg-blue-600" : "hover:bg-gray-700"
-            }`}
-          >
-            {item}
-          </button>
-        ))}
+    <aside className="w-64 bg-white shadow-xl border-r border-gray-200 flex flex-col">
+      <h1 className="text-2xl font-bold p-6 text-blue-600 tracking-tight">
+        Azure Analytics
+      </h1>
+
+      <nav className="flex-1 p-4">
+        <ul className="space-y-2">
+          {items.map((item) => (
+            <li key={item}>
+              <button
+                onClick={() => onSelect(item)}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-all 
+                  ${selected === item ? 
+                    "bg-blue-500 text-white shadow-md" : 
+                    "hover:bg-blue-50 text-gray-700"} 
+                `}
+              >
+                {item}
+              </button>
+            </li>
+          ))}
+        </ul>
       </nav>
     </aside>
   );
