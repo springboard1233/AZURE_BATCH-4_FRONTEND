@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 export default function Sidebar({ onSelect }) {
-  const [active, setActive] = useState("Usage Trends");
+  const [active, setActive] = useState("Dashboard");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (page) => {
@@ -19,6 +19,7 @@ export default function Sidebar({ onSelect }) {
   };
 
   const menuItems = [
+    {name:"Dashboard",icon:FileText},
     { name: "Usage Trends", icon: BarChart3 },
     { name: "Forecasts", icon: Activity },
     { name: "Reports", icon: ClipboardCheck },
