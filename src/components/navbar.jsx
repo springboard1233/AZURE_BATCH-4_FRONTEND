@@ -1,9 +1,10 @@
-import { useContext } from "react";
-import { ThemeContext } from "../context/ThemeContext";
 import { Moon, Sun, User } from "lucide-react";
+// Use the custom hook for Theme
+import { useTheme } from "../context/ThemeContext";
 
 export default function Navbar() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  // This safely gives you theme & toggleTheme, works with ThemeProvider!
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <header className="
@@ -12,7 +13,6 @@ export default function Navbar() {
       shadow-sm border-b border-gray-200 dark:border-gray-800
       sticky top-0 z-40
     ">
-      
       {/* Left Section - Logo + Title */}
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-blue-600 to-blue-400 
@@ -27,7 +27,6 @@ export default function Navbar() {
 
       {/* Right Section - Dark Toggle + Profile */}
       <div className="flex items-center gap-4">
-
         {/* Dark Mode Toggle */}
         <button
           onClick={toggleTheme}
@@ -43,7 +42,6 @@ export default function Navbar() {
             <Sun className="text-yellow-400" size={20} />
           )}
         </button>
-
         {/* User Profile Placeholder */}
         <div className="
           w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 
@@ -51,7 +49,6 @@ export default function Navbar() {
         ">
           <User className="text-gray-600 dark:text-gray-300" size={20} />
         </div>
-
       </div>
     </header>
   );

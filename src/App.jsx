@@ -16,6 +16,8 @@ import {
   Line,
 } from "recharts";
 
+import { ThemeProvider } from "./context/ThemeContext";
+import Navbar from "./components/Navbar";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import UsageTrends from "./pages/UsageTrends";
@@ -24,13 +26,12 @@ import Reports from "./pages/Reports";
 import Insights from "./pages/Insights";
 import IntroPage from "./pages/IntroPage";
 
-// KPI Card Component
+// KPI Card Component and Chart components (unchanged)
 function KPICard({ title, value, delta, subtitle, icon }) {
   const isPositive =
     typeof delta === "number"
       ? delta >= 0
       : delta?.toString().startsWith("+");
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -71,15 +72,12 @@ function KPICard({ title, value, delta, subtitle, icon }) {
   );
 }
 
-// System Usage Table
 function SystemUsageTable() {
   const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const getRandomPercentage = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
-
   const cpuUsageData = labels.map(() => getRandomPercentage(30, 100));
   const storageUsageData = labels.map(() => getRandomPercentage(40, 100));
-
   return (
     <div>
       <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
@@ -116,7 +114,6 @@ function SystemUsageTable() {
   );
 }
 
-// Bar Chart
 function BarComparisonChart({ data }) {
   return (
     <div>
@@ -141,7 +138,6 @@ function BarComparisonChart({ data }) {
   );
 }
 
-// Pie Chart
 function TrafficPieChart({ data }) {
   const baseColors = [
     "#3182ce",
@@ -153,7 +149,6 @@ function TrafficPieChart({ data }) {
     "#2b6cb0",
   ];
   const shuffledColors = baseColors.sort(() => 0.5 - Math.random());
-
   return (
     <div>
       <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
@@ -183,7 +178,6 @@ function TrafficPieChart({ data }) {
   );
 }
 
-// Line Chart
 function TrendLineChart({ data }) {
   return (
     <div>
@@ -205,6 +199,8 @@ function TrendLineChart({ data }) {
     </div>
   );
 }
+
+// ---- App starts here ----
 
 export default function App() {
   // Set default page; switch to "Dashboard" if that's your preference
@@ -336,12 +332,17 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 transition-all duration-500">
-      <Header />
-      <div className="flex flex-1">
-        <Sidebar onSelect={setSelectedPage} />
-        <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-10">{renderContent()}</main>
+    <ThemeProvider>
+      <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 transition-all duration-500">
+        <Navbar />
+        <Header />
+        <div className="flex flex-1">
+          <Sidebar onSelect={setSelectedPage} />
+          <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-10">
+            {renderContent()}
+          </main>
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 }
