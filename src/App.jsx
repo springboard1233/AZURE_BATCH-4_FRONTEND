@@ -21,10 +21,10 @@ import Sidebar from "./components/Sidebar";
 import UsageTrends from "./pages/UsageTrends";
 import Forecasts from "./pages/Forecasts";
 import Reports from "./pages/Reports";
-import Insights from "./pages/Insights"; // New Page
+import Insights from "./pages/Insights";
 import IntroPage from "./pages/IntroPage";
 
-
+// KPI Card Component
 function KPICard({ title, value, delta, subtitle, icon }) {
   const isPositive =
     typeof delta === "number"
@@ -71,6 +71,7 @@ function KPICard({ title, value, delta, subtitle, icon }) {
   );
 }
 
+// System Usage Table
 function SystemUsageTable() {
   const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const getRandomPercentage = (min, max) =>
@@ -80,13 +81,13 @@ function SystemUsageTable() {
   const storageUsageData = labels.map(() => getRandomPercentage(40, 100));
 
   return (
-    <div className="bg-white shadow-md rounded-2xl p-6 m-6">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+    <div>
+      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
         Weekly CPU & Storage Usage
       </h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 text-sm text-gray-700">
-          <thead className="bg-gray-100 text-gray-800 uppercase text-sm">
+        <table className="min-w-full border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200">
+          <thead className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 uppercase text-sm">
             <tr>
               <th className="py-3 px-4 border">Day</th>
               <th className="py-3 px-4 border">CPU Usage (%)</th>
@@ -97,13 +98,13 @@ function SystemUsageTable() {
             {labels.map((day, index) => (
               <tr
                 key={day}
-                className="hover:bg-blue-50 transition-colors duration-200"
+                className="hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors duration-200"
               >
                 <td className="py-3 px-4 border">{day}</td>
-                <td className="py-3 px-4 border font-medium text-blue-600">
+                <td className="py-3 px-4 border font-medium text-blue-600 dark:text-blue-300">
                   {cpuUsageData[index]}%
                 </td>
-                <td className="py-3 px-4 border font-medium text-green-600">
+                <td className="py-3 px-4 border font-medium text-green-600 dark:text-green-300">
                   {storageUsageData[index]}%
                 </td>
               </tr>
@@ -115,10 +116,14 @@ function SystemUsageTable() {
   );
 }
 
+// Bar Chart
 function BarComparisonChart({ data }) {
   return (
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
+    <div>
+      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
+        Current vs Forecast Bar Chart
+      </h2>
+      <ResponsiveContainer width="100%" height={250}>
         <BarChart
           data={data}
           margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
@@ -136,6 +141,7 @@ function BarComparisonChart({ data }) {
   );
 }
 
+// Pie Chart
 function TrafficPieChart({ data }) {
   const baseColors = [
     "#3182ce",
@@ -149,14 +155,17 @@ function TrafficPieChart({ data }) {
   const shuffledColors = baseColors.sort(() => 0.5 - Math.random());
 
   return (
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
+    <div>
+      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
+        Traffic Channels
+      </h2>
+      <ResponsiveContainer width="100%" height={250}>
         <PieChart>
           <Pie
             data={data}
             dataKey="value"
             nameKey="name"
-            outerRadius={110}
+            outerRadius={90}
             label
           >
             {data.map((entry, index) => (
@@ -174,10 +183,14 @@ function TrafficPieChart({ data }) {
   );
 }
 
+// Line Chart
 function TrendLineChart({ data }) {
   return (
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
+    <div>
+      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
+        Trend Line (This Week)
+      </h2>
+      <ResponsiveContainer width="100%" height={250}>
         <LineChart
           data={data}
           margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
@@ -194,7 +207,8 @@ function TrendLineChart({ data }) {
 }
 
 export default function App() {
-  const [selectedPage, setSelectedPage] = useState("Intro");
+  // Set default page; switch to "Dashboard" if that's your preference
+  const [selectedPage, setSelectedPage] = useState("Insights");
 
   const getRandomInt = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
@@ -242,6 +256,41 @@ export default function App() {
 
   const renderContent = () => {
     switch (selectedPage) {
+      case "Dashboard":
+        return (
+          <>
+            <IntroPage />
+            {/* KPIs Section */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow mb-8 px-5 py-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {kpiData.map(({ title, value, delta, subtitle }, idx) => (
+                  <KPICard
+                    key={idx}
+                    title={title}
+                    value={value}
+                    delta={delta}
+                    subtitle={subtitle}
+                  />
+                ))}
+              </div>
+            </div>
+            {/* Chart Grid: 2x2 */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow px-6 py-6">
+                <BarComparisonChart data={barChartData} />
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow px-6 py-6">
+                <TrafficPieChart data={pieChartData} />
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow px-6 py-6">
+                <TrendLineChart data={lineChartData} />
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow px-6 py-6">
+                <SystemUsageTable />
+              </div>
+            </div>
+          </>
+        );
       case "Usage Trends":
         return <UsageTrends />;
       case "Forecasts":
@@ -254,21 +303,33 @@ export default function App() {
         return (
           <>
             <IntroPage />
-            <div className="my-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-              {kpiData.map(({ title, value, delta, subtitle }, idx) => (
-                <KPICard
-                  key={idx}
-                  title={title}
-                  value={value}
-                  delta={delta}
-                  subtitle={subtitle}
-                />
-              ))}
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow mb-8 px-5 py-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {kpiData.map(({ title, value, delta, subtitle }, idx) => (
+                  <KPICard
+                    key={idx}
+                    title={title}
+                    value={value}
+                    delta={delta}
+                    subtitle={subtitle}
+                  />
+                ))}
+              </div>
             </div>
-            <BarComparisonChart data={barChartData} />
-            <TrafficPieChart data={pieChartData} />
-            <TrendLineChart data={lineChartData} />
-            <SystemUsageTable />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow px-6 py-6">
+                <BarComparisonChart data={barChartData} />
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow px-6 py-6">
+                <TrafficPieChart data={pieChartData} />
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow px-6 py-6">
+                <TrendLineChart data={lineChartData} />
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow px-6 py-6">
+                <SystemUsageTable />
+              </div>
+            </div>
           </>
         );
     }
@@ -279,7 +340,7 @@ export default function App() {
       <Header />
       <div className="flex flex-1">
         <Sidebar onSelect={setSelectedPage} />
-        <main className="flex-1 overflow-y-auto p-6">{renderContent()}</main>
+        <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-10">{renderContent()}</main>
       </div>
     </div>
   );

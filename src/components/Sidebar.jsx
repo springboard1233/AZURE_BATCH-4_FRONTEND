@@ -9,19 +9,21 @@ import {
 } from "lucide-react";
 
 export default function Sidebar({ onSelect }) {
-  const [active, setActive] = useState("Usage Trends");
+  const [active, setActive] = useState("Dashboard");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (page) => {
     setActive(page);
-    onSelect(page);
+    if (onSelect) onSelect(page);
     if (window.innerWidth < 1024) setIsOpen(false);
   };
 
   const menuItems = [
+    { name: "Dashboard", icon: FileText },
     { name: "Usage Trends", icon: BarChart3 },
     { name: "Forecasts", icon: Activity },
     { name: "Reports", icon: ClipboardCheck },
+    { name: "Insights", icon: BarChart3 },
   ];
 
   useEffect(() => {
@@ -62,12 +64,12 @@ export default function Sidebar({ onSelect }) {
           </div>
 
           {/* Navigation */}
-          <nav className="space-y-2">
+          <nav className="flex flex-col gap-4">
             {menuItems.map(({ name, icon: Icon }) => (
               <button
                 key={name}
                 onClick={() => handleSelect(name)}
-                className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left 
+                className={`flex items-center gap-3 w-full px-4 py-2 rounded-xl text-left 
                   font-medium transition-all duration-300 justify-start 
                   lg:justify-center group-hover:lg:justify-start ${
                     active === name
@@ -82,7 +84,7 @@ export default function Sidebar({ onSelect }) {
                       : "bg-gray-800 text-gray-300 group-hover:text-white"
                   }`}
                 >
-                  <Icon size={18} strokeWidth={2} />
+                  <Icon size={20} strokeWidth={2} />
                 </div>
                 <span
                   className={
