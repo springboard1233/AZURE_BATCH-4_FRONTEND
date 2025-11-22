@@ -14,7 +14,6 @@ export default function UsageTrends() {
   const [storageValues, setStorageValues] = useState([]);
   const [monthlyValues, setMonthlyValues] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [isLoading, setIsLoading] = useState(true);
 
   const chartDescriptions = {
@@ -36,8 +35,6 @@ export default function UsageTrends() {
 
   useEffect(() => {
     setIsLoading(true);
-
-    // Simulate data fetching (later replace with API call)
     setTimeout(() => {
       setCpuBefore(generateRandomArray(weekLabels.length, 30, 80));
       setCpuAfter(generateRandomArray(weekLabels.length, 50, 95));
@@ -82,23 +79,32 @@ export default function UsageTrends() {
     setCurrentIndex((prev) => (prev - 1 + charts.length) % charts.length);
 
   return (
-    <div className="p-6 flex flex-col items-center bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
-      <h2 className="text-2xl font-bold mb-4 text-center">
+    <div className="
+      p-6 flex flex-col items-center 
+      bg-[#fffff0] dark:bg-gray-900
+      text-[#2d2a1f] dark:text-white 
+      min-h-screen transition-colors duration-300
+    ">
+      <h2 className="text-2xl font-bold mb-4 text-center text-[#2d2a1f] dark:text-white">
         Interactive Usage Trends
       </h2>
 
       {/* Region Selector */}
       <div className="flex items-center justify-center gap-3 mb-8">
-        <label className="text-sm font-medium">Select Region:</label>
+        <label className="text-sm font-medium text-[#225577] dark:text-orange-200">Select Region:</label>
         <select
           value={region}
           onChange={(e) => setRegion(e.target.value)}
-          className="bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-md focus:outline-none"
+          className="
+            bg-[#ebedf0] dark:bg-gray-800
+            text-[#2d2a1f] dark:text-orange-100 
+            px-3 py-2 rounded-md focus:outline-none 
+            border border-[#b7d2f7] dark:border-orange-600
+            font-bold
+          "
         >
           {regions.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
+            <option key={r} value={r} className="text-[#2d2a1f] dark:text-orange-100">{r}</option>
           ))}
         </select>
       </div>
@@ -108,7 +114,14 @@ export default function UsageTrends() {
         {/* Left Arrow */}
         <button
           onClick={prevSlide}
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 p-2 rounded-full z-10"
+          className="
+            absolute left-2 top-1/2 transform -translate-y-1/2
+            bg-[#e0f3fa] dark:bg-fuchsia-700
+            hover:bg-[#b7d2f7] dark:hover:bg-fuchsia-600
+            p-2 rounded-full z-10
+            shadow-md
+            text-[#225577] dark:text-orange-100
+          "
         >
           <FaArrowLeft />
         </button>
@@ -125,7 +138,7 @@ export default function UsageTrends() {
               className="absolute w-full flex flex-col items-center"
             >
               {isLoading ? (
-                <div className="text-center text-gray-500">Loading data...</div>
+                <div className="text-center text-[#557399]">Loading data...</div>
               ) : (
                 <div className="relative group w-full max-w-5xl">
                   <ChartCard
@@ -135,7 +148,7 @@ export default function UsageTrends() {
                     multiLine
                     large
                   />
-                  <div className="invisible group-hover:visible absolute -bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white p-3 rounded-md text-sm w-96 text-center shadow-lg">
+                  <div className="invisible group-hover:visible absolute -bottom-20 left-1/2 transform -translate-x-1/2 bg-[#b7d2f7] dark:bg-gray-800 text-[#225577] dark:text-white p-3 rounded-md text-sm w-96 text-center shadow-lg">
                     {charts[currentIndex].description}
                   </div>
                 </div>
@@ -147,7 +160,14 @@ export default function UsageTrends() {
         {/* Right Arrow */}
         <button
           onClick={nextSlide}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 p-2 rounded-full z-10"
+          className="
+            absolute right-2 top-1/2 transform -translate-y-1/2
+            bg-[#e0f3fa] dark:bg-fuchsia-700
+            hover:bg-[#b7d2f7] dark:hover:bg-fuchsia-600
+            p-2 rounded-full z-10
+            shadow-md
+            text-[#225577] dark:text-orange-100
+          "
         >
           <FaArrowRight />
         </button>
@@ -161,8 +181,8 @@ export default function UsageTrends() {
             onClick={() => setCurrentIndex(i)}
             className={`w-3 h-3 rounded-full cursor-pointer ${
               i === currentIndex
-                ? "bg-blue-500"
-                : "bg-gray-300 dark:bg-gray-600"
+                ? "bg-[#557399] dark:bg-orange-400"
+                : "bg-[#b7d2f7] dark:bg-gray-600"
             }`}
           ></div>
         ))}

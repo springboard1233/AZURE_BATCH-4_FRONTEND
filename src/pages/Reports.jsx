@@ -37,8 +37,8 @@ export default function Reports() {
         {
           label: "Performance Metrics",
           data: generateRandomArray(perfLabels.length, 60, 95),
-          borderColor: "#0078D4",
-          backgroundColor: "rgba(0,120,212,0.2)",
+          borderColor: "#99bde7",
+          backgroundColor: "rgba(153,189,231,0.2)",
           tension: 0.4,
           fill: true,
         },
@@ -51,8 +51,8 @@ export default function Reports() {
         {
           label: "Forecast Metrics",
           data: generateRandomArray(foreLabels.length, 85, 100),
-          borderColor: "#9b5de5",
-          backgroundColor: "rgba(155,93,229,0.2)",
+          borderColor: "#bfcfdc",
+          backgroundColor: "rgba(191,207,220,0.18)",
           tension: 0.4,
           fill: true,
         },
@@ -68,19 +68,19 @@ export default function Reports() {
         display: true,
         position: "top",
         labels: {
-          color: "#6b7280",
+          color: "#557399",
           font: { size: 13, weight: "500" },
         },
       },
     },
     scales: {
       x: {
-        ticks: { color: "#6b7280" },
-        grid: { color: "rgba(107,114,128,0.1)" },
+        ticks: { color: "#557399", font: { weight: "bold" } },
+        grid: { color: "rgba(107,114,128,0.09)" },
       },
       y: {
-        ticks: { color: "#6b7280" },
-        grid: { color: "rgba(107,114,128,0.1)" },
+        ticks: { color: "#557399", font: { weight: "bold" } },
+        grid: { color: "rgba(107,114,128,0.09)" },
       },
     },
   };
@@ -90,8 +90,8 @@ export default function Reports() {
   };
 
   const tabs = [
-    { id: "performance", label: "Performance", color: "from-blue-500 to-teal-400" },
-    { id: "forecast", label: "Forecast", color: "from-purple-500 to-pink-400" },
+    { id: "performance", label: "Performance", color: "from-[#99bde7] to-[#b7d2f7]" },
+    { id: "forecast", label: "Forecast", color: "from-[#bfcfdc] to-[#99bde7]" },
   ];
 
   const tabTransition = {
@@ -100,17 +100,44 @@ export default function Reports() {
     exit: { opacity: 0, y: -30, transition: { duration: 0.4, ease: "easeIn" } },
   };
 
+  // Card component with hover effect
+  const Card = ({ children }) => (
+    <motion.div
+      className="
+        max-w-5xl mx-auto
+        bg-[#f7f7f5]/90 dark:bg-gradient-to-br dark:from-fuchsia-600 dark:to-orange-400/70
+        border border-[#b7d2f7] dark:border-none
+        backdrop-blur-md rounded-2xl shadow-xl p-6 overflow-hidden
+      "
+      whileHover={{
+        scale: 1.016,
+        boxShadow: "0 10px 24px -3px rgba(34,37,41,0.10), 0 4px 12px -2px rgba(34,37,41,0.05)",
+        borderColor: "#99bde7",
+      }}
+      transition={{ type: "spring", stiffness: 320 }}
+    >
+      {children}
+    </motion.div>
+  );
+
   return (
-    <div className="p-8 min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 transition-all duration-700">
+    <div className="
+      p-8 min-h-screen
+      bg-[#fffff0] dark:bg-gray-900
+      transition-all duration-700
+    ">
       <motion.h2
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-3xl font-bold text-center mb-10 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-400"
+        className="
+          text-3xl font-bold text-center mb-10
+          text-[#2d2a1f] dark:text-white
+        "
       >
          Analytics & Reports Dashboard
       </motion.h2>
-
+      
       {/* Tabs */}
       <div className="flex justify-center gap-6 mb-8">
         {tabs.map((tab) => (
@@ -122,7 +149,7 @@ export default function Reports() {
             className={`px-6 py-2.5 font-semibold rounded-full transition-all duration-300 shadow-md ${
               activeTab === tab.id
                 ? `bg-gradient-to-r ${tab.color} text-white shadow-lg`
-                : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                : "bg-[#ebedf0] dark:bg-gray-700 text-[#2d2a1f] dark:text-gray-300 hover:bg-[#dbeafe] dark:hover:bg-gray-600"
             }`}
           >
             {tab.label}
@@ -130,10 +157,10 @@ export default function Reports() {
         ))}
       </div>
 
-      {/* Animated Content */}
-      <div className="max-w-5xl mx-auto bg-white/80 dark:bg-gray-800/70 backdrop-blur-md rounded-2xl shadow-xl p-6 overflow-hidden">
-        <AnimatePresence mode="wait">
-          {activeTab === "performance" && performanceData && (
+      {/* Animated Content Card with Hover */}
+      <AnimatePresence mode="wait">
+        {activeTab === "performance" && performanceData && (
+          <Card>
             <motion.div
               key="performance"
               variants={tabTransition}
@@ -141,29 +168,33 @@ export default function Reports() {
               animate="enter"
               exit="exit"
             >
-              <h3 className="text-2xl font-semibold mb-2 text-blue-600 dark:text-blue-400">
+              <h3 className="text-2xl font-semibold mb-2 text-[#225577] dark:text-blue-400 text-center">
                 Performance Overview
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-[#557399] dark:text-orange-200 mb-6 text-center">
                 This report visualizes system performance trends for the past 6 months.
               </p>
-
               <div className="h-80 mb-6">
                 <Line data={performanceData} options={chartOptions} />
               </div>
-
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => handleDownload("Performance")}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-md transition"
+                className="
+                  px-6 py-3 bg-gradient-to-r from-[#99bde7] to-[#b7d2f7] text-[#2d2a1f]
+                  rounded-lg hover:from-[#b7d2f7] hover:to-[#99bde7] font-medium shadow-md transition
+                  dark:bg-gradient-to-r dark:from-fuchsia-700 dark:to-orange-500 dark:text-white dark:hover:from-orange-400 dark:hover:to-fuchsia-700
+                "
               >
                 ⬇️ Download Performance Report
               </motion.button>
             </motion.div>
-          )}
+          </Card>
+        )}
 
-          {activeTab === "forecast" && forecastData && (
+        {activeTab === "forecast" && forecastData && (
+          <Card>
             <motion.div
               key="forecast"
               variants={tabTransition}
@@ -171,29 +202,31 @@ export default function Reports() {
               animate="enter"
               exit="exit"
             >
-              <h3 className="text-2xl font-semibold mb-2 text-purple-600 dark:text-purple-400">
+              <h3 className="text-2xl font-semibold mb-2 text-[#557399] dark:text-orange-300 text-center">
                 Forecast Insights
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-[#557399] dark:text-orange-200 mb-6 text-center">
                 This section provides predictive analytics based on AI-powered forecasts.
               </p>
-
               <div className="h-80 mb-6">
                 <Line data={forecastData} options={chartOptions} />
               </div>
-
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => handleDownload("Forecast")}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium shadow-md transition"
+                className="
+                  px-6 py-3 bg-gradient-to-r from-[#bfcfdc] to-[#99bde7] text-[#2d2a1f]
+                  rounded-lg hover:from-[#99bde7] hover:to-[#bfcfdc] font-medium shadow-md transition
+                  dark:bg-gradient-to-r dark:from-fuchsia-700 dark:to-orange-500 dark:text-white dark:hover:from-orange-400 dark:hover:to-fuchsia-700
+                "
               >
                 ⬇️ Download Forecast Report
               </motion.button>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </Card>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -14,9 +14,15 @@ import {
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpCircle, ArrowDownCircle, Cpu, HardDrive, Network } from "lucide-react";
+import ForecastForm from "../components/ForecastForm"; // Path as per your structure
 
-// Main component
 export default function Forecasts() {
+  const [filters, setFilters] = useState({
+    region: '',
+    service: '',
+    timeHorizon: '',
+  });
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeOpt, setActiveOpt] = useState(null);
 
@@ -39,10 +45,11 @@ export default function Forecasts() {
       Math.round(netCurrent + i * randPercent(10, 30))
     );
 
+    // Light mode: Light blue/silver, dark mode: magenta-orange
     return [
       {
         id: "cpu",
-        icon: <Cpu className="w-6 h-6 text-white/90" />,
+        icon: <Cpu className="w-6 h-6 text-[#282828] dark:text-white" />,
         title: "CPU Demand",
         unit: "%",
         current: cpuCurrent,
@@ -51,12 +58,10 @@ export default function Forecasts() {
           { name: "Used", value: cpuCurrent },
           { name: "Remaining", value: 100 - cpuCurrent },
         ],
-        gradientFrom: "from-blue-500",
-        gradientTo: "to-blue-400",
       },
       {
         id: "storage",
-        icon: <HardDrive className="w-6 h-6 text-white/90" />,
+        icon: <HardDrive className="w-6 h-6 text-[#282828] dark:text-white" />,
         title: "Storage Usage",
         unit: "TB",
         current: storageCurrent,
@@ -68,12 +73,10 @@ export default function Forecasts() {
             { name: "Remaining", value: Math.max(0, 100 - usedPercent) },
           ];
         })(),
-        gradientFrom: "from-blue-500",
-        gradientTo: "to-blue-400",
       },
       {
         id: "network",
-        icon: <Network className="w-6 h-6 text-white/90" />,
+        icon: <Network className="w-6 h-6 text-[#282828] dark:text-white" />,
         title: "Network Bandwidth",
         unit: "Mbps",
         current: netCurrent,
@@ -86,19 +89,15 @@ export default function Forecasts() {
             { name: "Remaining", value: Math.max(0, 100 - usedPercent) },
           ];
         })(),
-        gradientFrom: "from-blue-500",
-        gradientTo: "to-blue-400",
       },
     ];
   }, []);
 
-  // auto-slide every 9s
   useEffect(() => {
     const t = setInterval(() => setCurrentSlide((p) => (p + 1) % metrics.length), 9000);
     return () => clearInterval(t);
   }, [metrics.length]);
 
-  // Optimizations (timeline items)
   const optimizations = [
     {
       id: "opt-cpu",
@@ -129,12 +128,10 @@ export default function Forecasts() {
     },
   ];
 
-  const COLORS = ["#00B5D8", "#E2E8F0"];
-
+  const COLORS = ["#99bde7", "#ebedf0"]; // Light blue/silver pie (light), can keep as is for dark
   const makeLineData = (forecast) =>
     forecast.map((v, i) => ({ name: `Week ${i + 1}`, value: v }));
 
-  // framer variants
   const slideVariants = {
     hidden: { opacity: 0, x: 80, scale: 0.98 },
     enter: {
@@ -163,18 +160,22 @@ export default function Forecasts() {
   const nextSlide = () => setCurrentSlide((p) => (p + 1) % metrics.length);
   const prevSlide = () => setCurrentSlide((p) => (p - 1 + metrics.length) % metrics.length);
 
+  const handleApplyFilters = (newFilters) => {
+    setFilters(newFilters);
+  };
+
   return (
-    <div className="p-6 md:p-8 lg:p-10 min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 transition-colors duration-500">
+    <div className="p-6 md:p-8 lg:p-10 min-h-screen bg-[#fffff0] dark:bg-gray-900 transition-colors duration-500">
+      <ForecastForm onSubmit={handleApplyFilters} />
+      <div className="my-8 border-t border-[#b7d2f7]/30"></div>
       <motion.h1
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-3xl md:text-4xl font-extrabold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-400"
+        className="text-3xl md:text-4xl font-extrabold text-center mb-8 text-[#282828] dark:bg-clip-text dark:text-transparent dark:bg-gradient-to-r dark:from-fuchsia-600 dark:to-orange-400"
       >
         Azure Demand Forecasting
       </motion.h1>
-
-      {/* slideshow container */}
       <div className="max-w-6xl mx-auto">
         <div className="relative">
           <AnimatePresence mode="wait">
@@ -193,35 +194,28 @@ export default function Forecasts() {
               />
             </motion.div>
           </AnimatePresence>
-
-          {/* nav controls */}
           <div className="flex items-center justify-between mt-6">
             <button
               onClick={prevSlide}
-              className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm transition"
+              className="px-4 py-2 rounded-lg bg-[#e0f3fa] dark:bg-fuchsia-800 hover:bg-[#afd8fa] dark:hover:bg-fuchsia-700 text-[#225577] dark:text-orange-200 shadow-sm transition"
             >
               ← Previous
             </button>
-            <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+            <div className="text-sm text-[#557399] dark:text-orange-300 font-medium">
               {currentSlide + 1} / {metrics.length}
             </div>
             <button
               onClick={nextSlide}
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-md transition"
+              className="px-4 py-2 rounded-lg bg-[#b7d2f7] text-[#2d2a1f] dark:bg-fuchsia-600 dark:text-white hover:bg-[#99bde7] shadow-md transition"
             >
               Next →
             </button>
           </div>
         </div>
-
-        {/* timeline - neat vertical list */}
         <div className="mt-12 max-w-3xl mx-auto">
-          <h3 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Optimization Insights</h3>
-
+          <h3 className="text-2xl font-semibold mb-6 text-[#2d2a1f] dark:text-orange-300">Optimization Insights</h3>
           <div className="relative pl-8">
-            {/* vertical line */}
-            <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700 rounded" />
-
+            <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-[#b7d2f7] dark:bg-fuchsia-700 rounded" />
             <ul className="space-y-8">
               {optimizations.map((opt, i) => {
                 const active = opt.metric === metrics[currentSlide].id;
@@ -235,59 +229,65 @@ export default function Forecasts() {
                     variants={timelineItemVariants}
                     className="relative"
                   >
-                    {/* dot */}
                     <div
                       className={`absolute -left-4 top-1 w-3 h-3 rounded-full border-2 ${
-                        active ? "bg-blue-500 border-blue-600" : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600"
+                        active
+                          ? "bg-[#b7d2f7] border-[#afd8fa]"
+                          : "bg-white dark:bg-[#dbeafe] border-[#b7d2f7] dark:border-fuchsia-600"
                       }`}
                     />
                     <div
                       className={`pl-6 py-4 pr-4 rounded-xl shadow-sm transition-all cursor-pointer ${
-                        active ? "bg-white dark:bg-gray-800 ring-1 ring-blue-200/50" : "bg-white/80 dark:bg-gray-800/60"
+                        active
+                          ? "bg-white dark:bg-orange-900 ring-1 ring-[#b7d2f7]/50"
+                          : "bg-[#f7f7f5]/80 dark:bg-fuchsia-900/60"
                       }`}
                       onClick={() => setActiveOpt(expanded ? null : opt.id)}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{opt.title}</h4>
-                          <div className="text-xs text-gray-500 mt-1">{opt.date}</div>
+                          <h4 className="text-lg font-semibold text-[#225577] dark:text-orange-200">{opt.title}</h4>
+                          <div className="text-xs text-[#557399] mt-1">{opt.date}</div>
                         </div>
                         <div className="text-right">
                           <span
                             className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                               opt.impact === "High"
-                                ? "bg-red-100 text-red-800"
+                                ? "bg-blue-100 text-blue-700 dark:bg-red-900/30 dark:text-red-300"
                                 : opt.impact === "Medium"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-green-100 text-green-800"
+                                ? "bg-slate-100 text-slate-900 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                             }`}
                           >
                             {opt.impact}
                           </span>
                         </div>
                       </div>
-                      {/* Only show summary; expanded details show below */}
                     </div>
                     {expanded && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className={`pl-6 pr-4 pt-3 pb-4 mt-0.5 mb-0 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-blue-100 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-200`}
+                        className={`pl-6 pr-4 pt-3 pb-4 mt-0.5 mb-0 rounded-xl bg-[#fafdff] dark:bg-fuchsia-900/50 border border-[#d2e0ed] dark:border-fuchsia-800 text-sm text-[#2d2a1f] dark:text-orange-200`}
                       >
-                        <div><span className="font-semibold">Description:</span> {opt.description}</div>
-                        <div className="mt-2"><span className="font-semibold">Impact:</span> {opt.impact}</div>
+                        <div>
+                          <span className="font-semibold">Description:</span> {opt.description}
+                        </div>
+                        <div className="mt-2">
+                          <span className="font-semibold">Impact:</span> {opt.impact}
+                        </div>
                         <div className="mt-2 flex items-center gap-3">
                           <button
                             onClick={() => setCurrentSlide(metrics.findIndex((m) => m.id === opt.metric))}
-                            className="text-sm px-3 py-1 rounded-md font-medium bg-blue-50 text-blue-700 border border-blue-100"
+                            className="text-sm px-3 py-1 rounded-md font-medium bg-[#e0f3fa] text-[#225577] border border-[#b7d2f7]"
                           >
                             View related metric
                           </button>
                           <a
                             href="#"
                             onClick={(e) => e.preventDefault()}
-                            className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                            className="text-sm text-[#557399] hover:text-[#225577] dark:hover:text-orange-300"
                           >
                             Learn more →
                           </a>
@@ -305,100 +305,91 @@ export default function Forecasts() {
   );
 }
 
-/* ----- ForecastCard component ----- */
+/* ----- ForecastCard with light theme (blue/silver) and dark (magenta-orange) ----- */
 function ForecastCard({ metric: m, COLORS, makeLineData }) {
-  // choose background classes dynamically
-  const bgFrom = m.gradientFrom || "from-blue-600";
-  const bgTo = m.gradientTo || "to-teal-400";
-
   return (
     <div
-      className={`rounded-2xl p-6 md:p-8 shadow-xl overflow-hidden bg-gradient-to-r ${bgFrom} ${bgTo} text-white`}
-      style={{ minHeight: 280 }}
+      className={`
+        rounded-3xl px-10 py-9 shadow-2xl border-4 border-[#b7d2f7] 
+        bg-gradient-to-br from-[#f3f5f7] to-[#ececec]
+        dark:bg-gradient-to-br dark:from-fuchsia-600 dark:to-orange-400 dark:border-none
+        backdrop-blur-md 
+        flex flex-col justify-center items-center
+        transition-all
+      `}
+      style={{
+        minHeight: 420,
+        maxWidth: '700px',
+        margin: 'auto'
+      }}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center">
-            {m.icon}
-          </div>
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold">{m.title}</h2>
-            <div className="text-sm opacity-90 mt-1">Forecast Overview</div>
-          </div>
+      <div className="flex flex-col items-center mb-2">
+        <div className="w-16 h-16 rounded-xl bg-[#e0f3fa] dark:bg-fuchsia-600 flex items-center justify-center mb-2">
+          {m.icon}
         </div>
-        <div className="text-right">
-          <div className="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-semibold">Forecast</div>
-        </div>
+        <h2 className="text-3xl font-bold mb-1 text-[#222] dark:text-white">{m.title}</h2>
+        <div className="text-base font-light text-[#557399] dark:text-orange-50 mb-3">Forecast Overview</div>
       </div>
-
-      <div className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-        {/* Pie / donut */}
-        <div className="flex flex-col items-center md:items-start md:justify-center">
-          <PieChart width={160} height={160}>
+      <div className="flex flex-col md:flex-row items-center md:items-start w-full gap-8 justify-between">
+        {/* Pie/Donut Chart & Current */}
+        <div className="flex flex-col items-center">
+          <PieChart width={120} height={120} style={{ marginBottom: 10 }}>
             <Pie
               data={m.pie}
               cx="50%"
               cy="50%"
-              innerRadius={46}
-              outerRadius={72}
+              innerRadius={40}
+              outerRadius={55}
               paddingAngle={6}
               dataKey="value"
               labelLine={false}
-              label={({ percent }) => `${Math.round(percent * 100)}%`}
+              label={({ percent }) => percent > 0.15 ? `${Math.round(percent * 100)}%` : ''}
             >
               {m.pie.map((entry, i) => (
-                <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="#ffffff" strokeWidth={1} />
+                <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="#fff" strokeWidth={2} />
               ))}
             </Pie>
           </PieChart>
-
-          <div className="mt-3 flex items-center gap-3">
-            {m.forecast[m.forecast.length - 1] >= m.current ? (
-              <ArrowUpCircle className="w-5 h-5 text-white/90" />
-            ) : (
-              <ArrowDownCircle className="w-5 h-5 text-white/90" />
-            )}
-            <div>
-              <div className="text-xs text-white/90">Current</div>
-              <div className="text-xl md:text-2xl font-bold">{m.current} {m.unit}</div>
-            </div>
+          <div className="flex items-center gap-2 mt-3 mb-2">
+            {m.forecast[m.forecast.length - 1] >= m.current
+              ? <ArrowUpCircle className="w-5 h-5 text-[#b7d2f7] dark:text-orange-200" />
+              : <ArrowDownCircle className="w-5 h-5 text-[#aca899] dark:text-fuchsia-200" />}
+            <span className="text-sm font-medium text-[#282828] dark:text-white">Current</span>
           </div>
+          <div className="text-2xl font-extrabold text-[#282828] dark:text-white">{m.current} <span className="text-lg">{m.unit}</span></div>
         </div>
-
-        {/* blank column for spacing on small screens (keeps layout balanced) */}
-        <div className="hidden md:block" />
-
-        {/* Line chart */}
-        <div className="md:col-span-2 bg-white/10 rounded-lg p-3 md:p-4">
+        {/* Line Chart with Glass effect */}
+        <div className="flex-1 bg-white/70 dark:bg-white/10 rounded-xl p-6 backdrop-blur-sm shadow-lg mt-6 md:mt-0">
           <div className="h-44 md:h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={makeLineData(m.forecast)}>
                 <defs>
                   <linearGradient id={`grad-${m.id}`} x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#ffffff" stopOpacity={0.6} />
+                    <stop offset="0%" stopColor="#b7d2f7" stopOpacity={0.8} />
+                    <stop offset="80%" stopColor="#bfcfdc" stopOpacity={0.5} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.8)" }} />
-                <YAxis tick={{ fill: "rgba(255,255,255,0.8)" }} />
-                <ReTooltip contentStyle={{ background: "#0b1220", borderRadius: 8, color: "#fff" }} />
-                <ReLegend verticalAlign="bottom" height={16} wrapperStyle={{ color: "rgba(255,255,255,0.85)" }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ef" />
+                <XAxis dataKey="name" tick={{ fill: "#557399", fontWeight: 600 }} />
+                <YAxis tick={{ fill: "#557399", fontWeight: 600 }} />
+                <ReTooltip contentStyle={{ background: "#eef3f8", borderRadius: 8, color: "#222" }} />
+                <ReLegend verticalAlign="bottom" height={16} wrapperStyle={{ color: "#b7d2f7" }} />
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="white"
-                  strokeWidth={3}
-                  dot={{ r: 3, stroke: "#fff" }}
-                  activeDot={{ r: 6 }}
+                  stroke={`url(#grad-${m.id})`}
+                  strokeWidth={4}
+                  dot={{ r: 4, stroke: "#e0f3fa", fill: "#b7d2f7" }}
+                  activeDot={{ r: 7 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
-
-          <div className="mt-3 text-sm text-white/90 flex items-center justify-between">
-            <div>7-Week projection</div>
-            <div className="font-semibold">{Array.isArray(m.forecast) ? m.forecast[m.forecast.length - 1] : "-"} {m.unit}</div>
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-[#557399]/90 dark:text-orange-50/90">7-Week projection</div>
+            <div className="font-bold text-lg text-[#2d2a1f] dark:text-white drop-shadow">
+              {Array.isArray(m.forecast) ? m.forecast[m.forecast.length - 1] : "-"} {m.unit}
+            </div>
           </div>
         </div>
       </div>

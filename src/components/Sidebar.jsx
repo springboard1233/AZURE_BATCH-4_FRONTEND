@@ -59,7 +59,7 @@ export default function Sidebar({ onSelect }) {
             </div>
             <h2 className="text-xl font-semibold tracking-wide transition-all duration-300 
               opacity-100 lg:opacity-0 group-hover:lg:opacity-100 whitespace-nowrap overflow-hidden">
-              Azure Panel
+              Azure Sidebar
             </h2>
           </div>
 
