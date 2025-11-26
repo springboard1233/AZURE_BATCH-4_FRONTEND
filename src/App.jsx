@@ -5,6 +5,8 @@ import MainArea from "./components/MainArea";
 import UsageTrends from "./pages/UsageTrends";
 import Forecasts from "./pages/Forecasts";
 import Reports from "./pages/Reports";
+import ModelComparisonTable from "../components/ModelComparisonTable";
+
 
 export default function App() {
   const [page, setPage] = useState("Dashboard Overview");
