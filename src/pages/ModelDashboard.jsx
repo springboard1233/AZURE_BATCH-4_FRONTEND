@@ -1,4 +1,6 @@
 import ModelComparisonTable from "../components/ModelComparisonTable";
+import ModelMetricsBarChart from "../components/charts/ModelMetricsBarChart";
+import ModelRadarChart from "../components/charts/ModelRadarChart";
 
 export default function ModelDashboard() {
   const modelResults = [

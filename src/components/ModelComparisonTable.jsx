@@ -1,54 +1,81 @@
-import React from "react";
+import React, { useState } from "react";
 
 export default function ModelComparisonTable({ models }) {
-  // Find best model based on lowest RMSE
-  const bestModel =
-    models.length > 0
-      ? models.reduce((best, current) =>
-          current.rmse < best.rmse ? current : best
-        )
-      : null;
+  const [sortKey, setSortKey] = useState("rmse");
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  // Handle sorting logic
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  };
+
+  const sortedModels = [...models].sort((a, b) => {
+    if (sortOrder === "asc") return a[sortKey] - b[sortKey];
+    return b[sortKey] - a[sortKey];
+  });
+
+  const bestModel = sortedModels[0];
 
   return (
-    <div className="bg-white p-5 rounded-xl shadow-md mt-6">
-      <h2 className="text-xl font-bold mb-4">📊 Model Comparison Dashboard</h2>
+    <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md mt-6">
+      <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+        📊 Model Comparison Dashboard
+      </h2>
 
       <table className="w-full border-collapse">
         <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="p-3 border">Model Name</th>
-            <th className="p-3 border">MAE</th>
-            <th className="p-3 border">RMSE</th>
-            <th className="p-3 border">MAPE</th>
-            <th className="p-3 border">Training Time (sec)</th>
-            <th className="p-3 border">Inference Speed (ms)</th>
-            <th className="p-3 border">Best</th>
+          <tr className="bg-gray-100 dark:bg-gray-700 text-left">
+            <SortableTH label="Model Name" onSort={() => handleSort("name")} />
+            <SortableTH label="MAE" onSort={() => handleSort("mae")} />
+            <SortableTH label="RMSE" onSort={() => handleSort("rmse")} />
+            <SortableTH label="MAPE" onSort={() => handleSort("mape")} />
+            <SortableTH label="Training Time" onSort={() => handleSort("trainingTime")} />
+            <SortableTH label="Inference Speed" onSort={() => handleSort("inferenceSpeed")} />
+            <th className="p-3 border text-gray-800 dark:text-gray-200">Best</th>
           </tr>
         </thead>
 
         <tbody>
-          {models.map((model, idx) => (
+          {sortedModels.map((model, idx) => (
             <tr
               key={idx}
-              className={
-                bestModel && bestModel.name === model.name
-                  ? "bg-green-100 font-semibold"
-                  : ""
-              }
+              className={`transition cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700 ${
+                bestModel.name === model.name
+                  ? "bg-green-100 dark:bg-green-900 font-semibold"
+                  : "bg-white dark:bg-gray-900"
+              }`}
+              onClick={() => alert(`Selected model: ${model.name}`)}
             >
-              <td className="p-3 border">{model.name}</td>
-              <td className="p-3 border">{model.mae}</td>
-              <td className="p-3 border">{model.rmse}</td>
-              <td className="p-3 border">{model.mape}%</td>
-              <td className="p-3 border">{model.trainingTime}</td>
-              <td className="p-3 border">{model.inferenceSpeed}</td>
-              <td className="p-3 border text-center">
-                {bestModel && bestModel.name === model.name ? "⭐" : ""}
+              <td className="p-3 border text-gray-800 dark:text-gray-200">{model.name}</td>
+              <td className="p-3 border text-gray-800 dark:text-gray-200">{model.mae}</td>
+              <td className="p-3 border text-gray-800 dark:text-gray-200">{model.rmse}</td>
+              <td className="p-3 border text-gray-800 dark:text-gray-200">{model.mape}%</td>
+              <td className="p-3 border text-gray-800 dark:text-gray-200">{model.trainingTime}</td>
+              <td className="p-3 border text-gray-800 dark:text-gray-200">{model.inferenceSpeed}</td>
+              <td className="p-3 border text-center text-gray-800 dark:text-gray-200">
+                {bestModel.name === model.name ? "⭐" : ""}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  );
+}
+
+// Helper Component: Sortable Table Header
+function SortableTH({ label, onSort }) {
+  return (
+    <th
+      onClick={onSort}
+      className="p-3 border text-gray-800 dark:text-gray-200 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 select-none"
+    >
+      {label} ⬍
+    </th>
   );
 }
