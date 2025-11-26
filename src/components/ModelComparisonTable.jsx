@@ -36,7 +36,6 @@ export default function ModelComparisonTable({ models }) {
             <SortableTH label="MAPE" onSort={() => handleSort("mape")} />
             <SortableTH label="Training Time" onSort={() => handleSort("trainingTime")} />
             <SortableTH label="Inference Speed" onSort={() => handleSort("inferenceSpeed")} />
-            <th className="p-3 border text-gray-800 dark:text-gray-200">Best</th>
           </tr>
         </thead>
 
@@ -57,9 +56,7 @@ export default function ModelComparisonTable({ models }) {
               <td className="p-3 border text-gray-800 dark:text-gray-200">{model.mape}%</td>
               <td className="p-3 border text-gray-800 dark:text-gray-200">{model.trainingTime}</td>
               <td className="p-3 border text-gray-800 dark:text-gray-200">{model.inferenceSpeed}</td>
-              <td className="p-3 border text-center text-gray-800 dark:text-gray-200">
-                {bestModel.name === model.name ? "⭐" : ""}
-              </td>
+              
             </tr>
           ))}
         </tbody>
