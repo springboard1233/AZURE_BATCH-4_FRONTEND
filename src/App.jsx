@@ -5,7 +5,7 @@ import MainArea from "./components/MainArea";
 import UsageTrends from "./pages/UsageTrends";
 import Forecasts from "./pages/Forecasts";
 import Reports from "./pages/Reports";
-import ModelComparisonTable from "../components/ModelComparisonTable";
+import ModelDashboard from "./pages/ModelDashboard";
 
 
 export default function App() {
@@ -21,6 +21,8 @@ export default function App() {
         return <Forecasts />;
       case "Reports":
         return <Reports />;
+      case "Model Dashboard":
+        return <ModelDashboard />;
       default:
         return <MainArea />;
     }
