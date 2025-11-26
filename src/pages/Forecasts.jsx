@@ -22,59 +22,21 @@ export default function Forecasts() {
 
   return (
     <div className="space-y-6">
-
-      {/* ✅ KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
-        <KPICard
-          title="Run Rate (ARR)"
-          value="$8.9M"
-          delta={+12.2}
-          subtitle="6-month outlook"
-        />
-
-        <KPICard
-          title="Forecast Accuracy"
-          value="93%"
-          delta={+2.1}
-          subtitle="3-month trailing"
-        />
-
-        <KPICard
-          title="CAC Payback"
-          value="7.4 mo"
-          delta={-0.6}
-          subtitle="improving"
-        />
-
-        <KPICard
-          title="Gross Margin"
-          value="68%"
-          delta={+1.2}
-          subtitle="QoQ"
-        />
-
+        <KPICard title="Run Rate (ARR)" value="$8.9M" delta={+12.2} subtitle="6-month outlook" />
+        <KPICard title="Forecast Accuracy" value="93%" delta={+2.1} subtitle="3-month trailing" />
+        <KPICard title="CAC Payback" value="7.4 mo" delta={-0.6} subtitle="improving" />
+        <KPICard title="Gross Margin" value="68%" delta={+1.2} subtitle="QoQ" />
       </div>
 
-      {/* ✅ Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        {/* Revenue Forecast Chart */}
-        <ChartCard
-          title="Revenue Forecast"
-          description="Projected revenue for the next 6 months"
-        >
+        <ChartCard title="Revenue Forecast" description="Projected revenue for the next 6 months">
           <TrendLineChart data={revenueForecast} />
         </ChartCard>
 
-        {/* Product Mix Pie Chart */}
-        <ChartCard
-          title="Product Mix Forecast"
-          description="Projected distribution by product category"
-        >
+        <ChartCard title="Product Mix Forecast" description="Projected distribution by product category">
           <TrafficPieChart data={mix} />
         </ChartCard>
-
       </div>
     </div>
   );
