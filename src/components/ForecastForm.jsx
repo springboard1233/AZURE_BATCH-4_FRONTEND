@@ -2,17 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import Dropdown from './Dropdown';
 
 const regionOptions = [
-  'Central India', 'South India', 'North India', 'East India', 'West India', 'West US'
+  'Central India', 'South India', 'North India', 'East India', 'West India'
 ];
 const serviceOptions = ['Compute', 'Storage'];
 const timeHorizonOptions = ['7 days', '14 days', '30 days'];
 
-const ForecastForm = () => {
+const ForecastForm = ({ onSubmit }) => {
   const [region, setRegion] = useState('');
   const [service, setService] = useState('');
   const [timeHorizon, setTimeHorizon] = useState('');
 
-  // Light blue border in light, magenta-orange in dark (matches Forecasts page)
   const borderRef = useRef();
   useEffect(() => {
     if (borderRef.current) {
@@ -26,7 +25,10 @@ const ForecastForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Region: ${region}\nService: ${service}\nTime Horizon: ${timeHorizon}`);
+    // Call the parent onSubmit function with chosen filters
+    if (onSubmit) {
+      onSubmit({ region, service, timeHorizon });
+    }
   };
 
   return (
@@ -43,7 +45,6 @@ const ForecastForm = () => {
       }}
       onSubmit={handleSubmit}
     >
-      {/* Light blue border */}
       <div
         ref={borderRef}
         className="absolute inset-0 rounded-3xl pointer-events-none z-0"
@@ -53,7 +54,6 @@ const ForecastForm = () => {
           zIndex: 0
         }}
       />
-
       <h2 className="
         text-2xl font-extrabold mb-8 text-center drop-shadow text-[#2d2a1f]
         dark:bg-gradient-to-r dark:from-fuchsia-400 dark:to-orange-300 dark:bg-clip-text dark:text-transparent

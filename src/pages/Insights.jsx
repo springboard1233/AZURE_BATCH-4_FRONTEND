@@ -21,11 +21,14 @@ import {
   TrendingUp,
   BarChart3,
 } from "lucide-react";
+import ModelMetricsBarChart from "../components/charts/ModelMetricsBarChart";
+import ModelRadarChart from "../components/charts/ModelRadarChart";
+import ModelComparisonTable from "../components/ModelComparisonTable";
 
-// Simulate fetching fresh data on every reload
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
 const generateRandomData = () => ({
   kpis: [
     {
@@ -88,7 +91,6 @@ const generateRandomData = () => ({
   ],
 });
 
-// Card with hover effect using Framer Motion
 const Card = ({ children }) => (
   <motion.div
     className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700"
@@ -105,7 +107,6 @@ const Card = ({ children }) => (
   </motion.div>
 );
 
-// KPI card already has a hover effect, maintain as is
 const KPICard = ({ title, value, change, icon: Icon, color, bgColor }) => {
   const isPositive = change.startsWith("+");
   const ChangeIcon = isPositive ? ArrowUpRight : ArrowDownRight;
@@ -122,13 +123,17 @@ const KPICard = ({ title, value, change, icon: Icon, color, bgColor }) => {
       transition={{ type: "spring", stiffness: 350 }}
     >
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          {title}
+        </p>
         <div className={`p-2 rounded-full ${bgColor} ${color}`}>
           <Icon className="w-5 h-5" />
         </div>
       </div>
       <div className="mt-4 flex flex-col sm:flex-row sm:items-end sm:justify-between">
-        <p className="text-3xl font-bold text-gray-900 dark:text-white">{value}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+          {value}
+        </p>
         <div
           className={`mt-2 sm:mt-0 flex items-center text-sm font-semibold ${
             isPositive
@@ -151,28 +156,54 @@ export default function Insights() {
     setInsightsData(generateRandomData());
   }, []);
 
+  const modelMetrics = [
+    {
+      name: "LSTM",
+      mae: 10,
+      rmse: 15,
+      mape: 7,
+      trainingTime: 80,
+      inferenceSpeed: 60,
+    },
+    {
+      name: "RF",
+      mae: 12,
+      rmse: 18,
+      mape: 9,
+      trainingTime: 40,
+      inferenceSpeed: 75,
+    },
+    {
+      name: "ARIMA",
+      mae: 14,
+      rmse: 20,
+      mape: 11,
+      trainingTime: 30,
+      inferenceSpeed: 50,
+    },
+  ];
+
   return (
     <div className="p-4 md:p-0">
       <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-6">
         Insights Dashboard
       </h1>
 
-      {/* KPI Cards Grid */}
+      {/* KPI grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {insightsData.kpis.map((kpi) => (
           <KPICard key={kpi.id} {...kpi} />
         ))}
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Revenue Trend Area Chart - wrapped in Card */}
+      {/* Row 1: two main charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <Card>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
             <TrendingUp className="w-5 h-5 mr-2 text-magenta-600 dark:text-pink-300" />
             Monthly Financial Trend
           </h3>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={320}>
             <AreaChart data={insightsData.revenueTrend}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -217,13 +248,12 @@ export default function Insights() {
           </ResponsiveContainer>
         </Card>
 
-        {/* Campaign Performance Bar Chart - wrapped in Card */}
         <Card>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
             <BarChart3 className="w-5 h-5 mr-2 text-orange-600 dark:text-orange-400" />
             Campaign Engagement
           </h3>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={320}>
             <BarChart
               data={insightsData.campaignPerformance}
               layout="vertical"
@@ -254,14 +284,35 @@ export default function Insights() {
         </Card>
       </div>
 
-      {/* Recent Activity/Log - wrapped in Card */}
+      {/* Row 2: model comparison section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          Model Performance Overview
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <Card>
+            <ModelMetricsBarChart models={modelMetrics} />
+          </Card>
+          <Card>
+            <ModelRadarChart models={modelMetrics} />
+          </Card>
+        </div>
+        <Card>
+          <ModelComparisonTable models={modelMetrics} />
+        </Card>
+      </div>
+
+      {/* Recent activity full-width */}
       <Card>
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
           Recent Activity
         </h3>
         <ul className="divide-y divide-amber-200 dark:divide-amber-900">
           {insightsData.recentActivity.map((activity) => (
-            <li key={activity.id} className="py-3 flex justify-between items-center">
+            <li
+              key={activity.id}
+              className="py-3 flex justify-between items-center"
+            >
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-2 ${

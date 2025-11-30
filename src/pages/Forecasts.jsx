@@ -13,21 +13,29 @@ import {
   Cell,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUpCircle, ArrowDownCircle, Cpu, HardDrive, Network } from "lucide-react";
-import ForecastForm from "../components/ForecastForm"; // Path as per your structure
+import {
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Cpu,
+  HardDrive,
+  Network,
+} from "lucide-react";
+import ForecastForm from "../components/ForecastForm";
+import ForecastVisualizations from "../components/ForecastVisualizations";
 
 export default function Forecasts() {
   const [filters, setFilters] = useState({
-    region: '',
-    service: '',
-    timeHorizon: '',
+    region: "",
+    service: "",
+    timeHorizon: "",
   });
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeOpt, setActiveOpt] = useState(null);
 
   const metrics = useMemo(() => {
-    const randPercent = (min, max) => Math.round(Math.random() * (max - min) + min);
+    const randPercent = (min, max) =>
+      Math.round(Math.random() * (max - min) + min);
 
     const cpuCurrent = randPercent(55, 80);
     const cpuForecast = Array.from({ length: 7 }, (_, i) =>
@@ -35,9 +43,15 @@ export default function Forecasts() {
     );
 
     const storageCurrent = Number((Math.random() * 0.9 + 2.0).toFixed(2));
-    const storageNext = Number((storageCurrent + Math.random() * 0.6 + 0.1).toFixed(2));
+    const storageNext = Number(
+      (storageCurrent + Math.random() * 0.6 + 0.1).toFixed(2)
+    );
     const storageForecast = Array.from({ length: 7 }, (_, i) =>
-      Number((storageCurrent + i * ((storageNext - storageCurrent) / 6)).toFixed(2))
+      Number(
+        (storageCurrent +
+          i * ((storageNext - storageCurrent) / 6)
+        ).toFixed(2)
+      )
     );
 
     const netCurrent = randPercent(600, 900);
@@ -45,7 +59,6 @@ export default function Forecasts() {
       Math.round(netCurrent + i * randPercent(10, 30))
     );
 
-    // Light mode: Light blue/silver, dark mode: magenta-orange
     return [
       {
         id: "cpu",
@@ -61,7 +74,9 @@ export default function Forecasts() {
       },
       {
         id: "storage",
-        icon: <HardDrive className="w-6 h-6 text-[#282828] dark:text-white" />,
+        icon: (
+          <HardDrive className="w-6 h-6 text-[#282828] dark:text-white" />
+        ),
         title: "Storage Usage",
         unit: "TB",
         current: storageCurrent,
@@ -76,7 +91,9 @@ export default function Forecasts() {
       },
       {
         id: "network",
-        icon: <Network className="w-6 h-6 text-[#282828] dark:text-white" />,
+        icon: (
+          <Network className="w-6 h-6 text-[#282828] dark:text-white" />
+        ),
         title: "Network Bandwidth",
         unit: "Mbps",
         current: netCurrent,
@@ -94,9 +111,34 @@ export default function Forecasts() {
   }, []);
 
   useEffect(() => {
-    const t = setInterval(() => setCurrentSlide((p) => (p + 1) % metrics.length), 9000);
-    return () => clearInterval(t);
-  }, [metrics.length]);
+    setCurrentSlide(0);
+  }, [filters]);
+
+  const filteredMetrics = useMemo(() => {
+    if (!filters.service) return metrics;
+    return metrics.filter((m) =>
+      filters.service === "Compute"
+        ? m.id === "cpu"
+        : filters.service === "Storage"
+        ? m.id === "storage"
+        : m.id
+    );
+  }, [metrics, filters.service]);
+
+  useEffect(() => {
+    setCurrentSlide((slide) =>
+      Math.min(slide, filteredMetrics.length - 1)
+    );
+  }, [filteredMetrics.length]);
+
+  const handleApplyFilters = (newFilters) => {
+    setFilters(newFilters);
+  };
+
+  const nextSlide = () =>
+    setCurrentSlide((p) => (p + 1) % filteredMetrics.length);
+  const prevSlide = () =>
+    setCurrentSlide((p) => (p - 1 + filteredMetrics.length) % filteredMetrics.length);
 
   const optimizations = [
     {
@@ -121,14 +163,14 @@ export default function Forecasts() {
       id: "opt-network",
       title: "Network QoS Tuning",
       description:
-        "Adjust QoS(Quality of Service) rules to prioritize critical traffic, apply burst controls on non-critical flows and reduce latency spikes.",
+        "Adjust QoS rules to prioritize critical traffic, apply burst controls on non-critical flows and reduce latency spikes.",
       impact: "Low",
       metric: "network",
       date: "2025-10-10",
     },
   ];
 
-  const COLORS = ["#99bde7", "#ebedf0"]; // Light blue/silver pie (light), can keep as is for dark
+  const COLORS = ["#99bde7", "#ebedf0"];
   const makeLineData = (forecast) =>
     forecast.map((v, i) => ({ name: `Week ${i + 1}`, value: v }));
 
@@ -157,17 +199,12 @@ export default function Forecasts() {
     }),
   };
 
-  const nextSlide = () => setCurrentSlide((p) => (p + 1) % metrics.length);
-  const prevSlide = () => setCurrentSlide((p) => (p - 1 + metrics.length) % metrics.length);
-
-  const handleApplyFilters = (newFilters) => {
-    setFilters(newFilters);
-  };
-
   return (
     <div className="p-6 md:p-8 lg:p-10 min-h-screen bg-[#fffff0] dark:bg-gray-900 transition-colors duration-500">
       <ForecastForm onSubmit={handleApplyFilters} />
+
       <div className="my-8 border-t border-[#b7d2f7]/30"></div>
+
       <motion.h1
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -176,24 +213,32 @@ export default function Forecasts() {
       >
         Azure Demand Forecasting
       </motion.h1>
+
       <div className="max-w-6xl mx-auto">
         <div className="relative">
           <AnimatePresence mode="wait">
             <motion.div
-              key={metrics[currentSlide].id}
+              key={filteredMetrics[currentSlide]?.id ?? "none"}
               variants={slideVariants}
               initial="hidden"
               animate="enter"
               exit="exit"
               className="w-full"
             >
-              <ForecastCard
-                metric={metrics[currentSlide]}
-                COLORS={COLORS}
-                makeLineData={makeLineData}
-              />
+              {filteredMetrics.length > 0 ? (
+                <ForecastCard
+                  metric={filteredMetrics[currentSlide]}
+                  COLORS={COLORS}
+                  makeLineData={makeLineData}
+                />
+              ) : (
+                <div className="p-10 text-center text-[#557399]">
+                  No forecasts available for selected options.
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
+
           <div className="flex items-center justify-between mt-6">
             <button
               onClick={prevSlide}
@@ -202,7 +247,8 @@ export default function Forecasts() {
               ← Previous
             </button>
             <div className="text-sm text-[#557399] dark:text-orange-300 font-medium">
-              {currentSlide + 1} / {metrics.length}
+              {filteredMetrics.length === 0 ? 0 : currentSlide + 1} /{" "}
+              {filteredMetrics.length}
             </div>
             <button
               onClick={nextSlide}
@@ -212,13 +258,16 @@ export default function Forecasts() {
             </button>
           </div>
         </div>
+
         <div className="mt-12 max-w-3xl mx-auto">
-          <h3 className="text-2xl font-semibold mb-6 text-[#2d2a1f] dark:text-orange-300">Optimization Insights</h3>
+          <h3 className="text-2xl font-semibold mb-6 text-[#2d2a1f] dark:text-orange-300">
+            Optimization Insights
+          </h3>
           <div className="relative pl-8">
             <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-[#b7d2f7] dark:bg-fuchsia-700 rounded" />
             <ul className="space-y-8">
               {optimizations.map((opt, i) => {
-                const active = opt.metric === metrics[currentSlide].id;
+                const active = filteredMetrics[currentSlide]?.id === opt.metric;
                 const expanded = activeOpt === opt.id;
                 return (
                   <motion.li
@@ -242,12 +291,18 @@ export default function Forecasts() {
                           ? "bg-white dark:bg-orange-900 ring-1 ring-[#b7d2f7]/50"
                           : "bg-[#f7f7f5]/80 dark:bg-fuchsia-900/60"
                       }`}
-                      onClick={() => setActiveOpt(expanded ? null : opt.id)}
+                      onClick={() =>
+                        setActiveOpt(expanded ? null : opt.id)
+                      }
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <h4 className="text-lg font-semibold text-[#225577] dark:text-orange-200">{opt.title}</h4>
-                          <div className="text-xs text-[#557399] mt-1">{opt.date}</div>
+                          <h4 className="text-lg font-semibold text-[#225577] dark:text-orange-200">
+                            {opt.title}
+                          </h4>
+                          <div className="text-xs text-[#557399] mt-1">
+                            {opt.date}
+                          </div>
                         </div>
                         <div className="text-right">
                           <span
@@ -269,17 +324,25 @@ export default function Forecasts() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className={`pl-6 pr-4 pt-3 pb-4 mt-0.5 mb-0 rounded-xl bg-[#fafdff] dark:bg-fuchsia-900/50 border border-[#d2e0ed] dark:border-fuchsia-800 text-sm text-[#2d2a1f] dark:text-orange-200`}
+                        className="pl-6 pr-4 pt-3 pb-4 mt-0.5 mb-0 rounded-xl bg-[#fafdff] dark:bg-fuchsia-900/50 border border-[#d2e0ed] dark:border-fuchsia-800 text-sm text-[#2d2a1f] dark:text-orange-200"
                       >
                         <div>
-                          <span className="font-semibold">Description:</span> {opt.description}
+                          <span className="font-semibold">Description:</span>{" "}
+                          {opt.description}
                         </div>
                         <div className="mt-2">
-                          <span className="font-semibold">Impact:</span> {opt.impact}
+                          <span className="font-semibold">Impact:</span>{" "}
+                          {opt.impact}
                         </div>
                         <div className="mt-2 flex items-center gap-3">
                           <button
-                            onClick={() => setCurrentSlide(metrics.findIndex((m) => m.id === opt.metric))}
+                            onClick={() =>
+                              setCurrentSlide(
+                                filteredMetrics.findIndex(
+                                  (m) => m.id === opt.metric
+                                )
+                              )
+                            }
                             className="text-sm px-3 py-1 rounded-md font-medium bg-[#e0f3fa] text-[#225577] border border-[#b7d2f7]"
                           >
                             View related metric
@@ -300,12 +363,17 @@ export default function Forecasts() {
             </ul>
           </div>
         </div>
+
+        {/* New Forecast visualizations section */}
+        <div className="mt-12">
+          <ForecastVisualizations />
+        </div>
       </div>
     </div>
   );
 }
 
-/* ----- ForecastCard with light theme (blue/silver) and dark (magenta-orange) ----- */
+// ----- ForecastCard -----
 function ForecastCard({ metric: m, COLORS, makeLineData }) {
   return (
     <div
@@ -319,21 +387,30 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
       `}
       style={{
         minHeight: 420,
-        maxWidth: '700px',
-        margin: 'auto'
+        maxWidth: "700px",
+        margin: "auto",
       }}
     >
       <div className="flex flex-col items-center mb-2">
         <div className="w-16 h-16 rounded-xl bg-[#e0f3fa] dark:bg-fuchsia-600 flex items-center justify-center mb-2">
           {m.icon}
         </div>
-        <h2 className="text-3xl font-bold mb-1 text-[#222] dark:text-white">{m.title}</h2>
-        <div className="text-base font-light text-[#557399] dark:text-orange-50 mb-3">Forecast Overview</div>
+        <h2 className="text-3xl font-bold mb-1 text-[#222] dark:text-white">
+          {m.title}
+        </h2>
+        <div className="text-base font-light text-[#557399] dark:text-orange-50 mb-3">
+          Forecast Overview
+        </div>
       </div>
+
       <div className="flex flex-col md:flex-row items-center md:items-start w-full gap-8 justify-between">
-        {/* Pie/Donut Chart & Current */}
+        {/* Pie / Donut chart & current */}
         <div className="flex flex-col items-center">
-          <PieChart width={120} height={120} style={{ marginBottom: 10 }}>
+          <PieChart
+            width={120}
+            height={120}
+            style={{ marginBottom: 10 }}
+          >
             <Pie
               data={m.pie}
               cx="50%"
@@ -343,37 +420,75 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
               paddingAngle={6}
               dataKey="value"
               labelLine={false}
-              label={({ percent }) => percent > 0.15 ? `${Math.round(percent * 100)}%` : ''}
+              label={({ percent }) =>
+                percent > 0.15 ? `${Math.round(percent * 100)}%` : ""
+              }
             >
               {m.pie.map((entry, i) => (
-                <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="#fff" strokeWidth={2} />
+                <Cell
+                  key={i}
+                  fill={COLORS[i % COLORS.length]}
+                  stroke="#fff"
+                  strokeWidth={2}
+                />
               ))}
             </Pie>
           </PieChart>
           <div className="flex items-center gap-2 mt-3 mb-2">
-            {m.forecast[m.forecast.length - 1] >= m.current
-              ? <ArrowUpCircle className="w-5 h-5 text-[#b7d2f7] dark:text-orange-200" />
-              : <ArrowDownCircle className="w-5 h-5 text-[#aca899] dark:text-fuchsia-200" />}
-            <span className="text-sm font-medium text-[#282828] dark:text-white">Current</span>
+            {m.forecast[m.forecast.length - 1] >= m.current ? (
+              <ArrowUpCircle className="w-5 h-5 text-[#b7d2f7] dark:text-orange-200" />
+            ) : (
+              <ArrowDownCircle className="w-5 h-5 text-[#aca899] dark:text-fuchsia-200" />
+            )}
+            <span className="text-sm font-medium text-[#282828] dark:text-white">
+              Current
+            </span>
           </div>
-          <div className="text-2xl font-extrabold text-[#282828] dark:text-white">{m.current} <span className="text-lg">{m.unit}</span></div>
+          <div className="text-2xl font-extrabold text-[#282828] dark:text-white">
+            {m.current} <span className="text-lg">{m.unit}</span>
+          </div>
         </div>
-        {/* Line Chart with Glass effect */}
+
+        {/* Line chart */}
         <div className="flex-1 bg-white/70 dark:bg-white/10 rounded-xl p-6 backdrop-blur-sm shadow-lg mt-6 md:mt-0">
           <div className="h-44 md:h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={makeLineData(m.forecast)}>
                 <defs>
                   <linearGradient id={`grad-${m.id}`} x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#b7d2f7" stopOpacity={0.8} />
-                    <stop offset="80%" stopColor="#bfcfdc" stopOpacity={0.5} />
+                    <stop
+                      offset="0%"
+                      stopColor="#b7d2f7"
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset="80%"
+                      stopColor="#bfcfdc"
+                      stopOpacity={0.5}
+                    />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ef" />
-                <XAxis dataKey="name" tick={{ fill: "#557399", fontWeight: 600 }} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#e0e7ef"
+                />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: "#557399", fontWeight: 600 }}
+                />
                 <YAxis tick={{ fill: "#557399", fontWeight: 600 }} />
-                <ReTooltip contentStyle={{ background: "#eef3f8", borderRadius: 8, color: "#222" }} />
-                <ReLegend verticalAlign="bottom" height={16} wrapperStyle={{ color: "#b7d2f7" }} />
+                <ReTooltip
+                  contentStyle={{
+                    background: "#eef3f8",
+                    borderRadius: 8,
+                    color: "#222",
+                  }}
+                />
+                <ReLegend
+                  verticalAlign="bottom"
+                  height={16}
+                  wrapperStyle={{ color: "#b7d2f7" }}
+                />
                 <Line
                   type="monotone"
                   dataKey="value"
@@ -386,9 +501,14 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
             </ResponsiveContainer>
           </div>
           <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-[#557399]/90 dark:text-orange-50/90">7-Week projection</div>
+            <div className="text-sm text-[#557399]/90 dark:text-orange-50/90">
+              7-Week projection
+            </div>
             <div className="font-bold text-lg text-[#2d2a1f] dark:text-white drop-shadow">
-              {Array.isArray(m.forecast) ? m.forecast[m.forecast.length - 1] : "-"} {m.unit}
+              {Array.isArray(m.forecast)
+                ? m.forecast[m.forecast.length - 1]
+                : "-"}{" "}
+              {m.unit}
             </div>
           </div>
         </div>

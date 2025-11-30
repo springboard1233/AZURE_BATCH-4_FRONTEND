@@ -17,8 +17,7 @@ export default function Sidebar({ onSelect }) {
     if (onSelect) onSelect(page);
     if (window.innerWidth < 1024) setIsOpen(false);
   };
-
-  // Color mapping for icons and labels for each menu item (light/dark mode)
+  
   const iconColorMap = {
     Dashboard: "text-[#225577] dark:text-orange-300",
     "Usage Trends": "text-orange-500 dark:text-orange-300",
@@ -62,7 +61,7 @@ export default function Sidebar({ onSelect }) {
       {/* Sidebar */}
       <aside
         className={`group fixed lg:static top-0 left-0 h-full w-64 lg:w-20 hover:lg:w-64 
-          bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100 p-5 shadow-2xl 
+          bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100 px-5 py-5 shadow-2xl 
           border-r border-gray-800 flex flex-col justify-between transform 
           transition-all duration-300 ease-in-out z-40 
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
@@ -70,46 +69,52 @@ export default function Sidebar({ onSelect }) {
         {/* Logo */}
         <div>
           <div className="flex items-center justify-center gap-3 mb-10">
-            <div className="w-10 h-10 flex items-center justify-center rounded-2xl 
-              bg-gradient-to-br from-[#b7d2f7] to-[#225577] shadow-lg">
+            <div
+              className="w-10 h-10 flex items-center justify-center rounded-2xl 
+              bg-gradient-to-br from-[#b7d2f7] to-[#225577] shadow-lg"
+            >
               <span className="text-lg font-bold text-white">A</span>
             </div>
-            <h2 className="text-xl font-semibold tracking-wide transition-all duration-300 
-              opacity-100 lg:opacity-0 group-hover:lg:opacity-100 whitespace-nowrap overflow-hidden">
+            <h2
+              className="text-xl font-semibold tracking-wide transition-all duration-300 
+              opacity-100 lg:opacity-0 group-hover:lg:opacity-100 whitespace-nowrap overflow-hidden"
+            >
               Azure Sidebar
             </h2>
           </div>
 
           {/* Navigation */}
-          <nav className="flex flex-col gap-4">
+          <nav className="flex flex-col gap-3">
             {menuItems.map(({ name, icon: Icon }) => (
               <button
                 key={name}
                 onClick={() => handleSelect(name)}
-                className={`flex items-center gap-3 w-full px-4 py-2 rounded-xl text-left
-                  font-medium transition-all duration-300 justify-start
-                  lg:justify-center group-hover:lg:justify-start ${
+                className={`flex items-center justify-center lg:justify-center gap-0 
+                  w-full py-3 rounded-2xl text-left font-medium transition-all duration-300
+                  ${
                     active === name
-                      ? `bg-gradient-to-r ${bgActiveColorMap[name]} text-white shadow-md scale-[1.03]`
-                      : "text-gray-400 hover:text-white hover:bg-gray-800"
+                      ? "bg-transparent text-white"
+                      : "text-gray-400 hover:text-white hover:bg-gray-800/40"
                   }`}
               >
+                {/* Icon pill */}
                 <div
-                  className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
-                    active === name
-                      ? `bg-gradient-to-br ${bgActiveColorMap[name]} text-white shadow-lg`
-                      : `bg-gray-800 ${iconColorMap[name]} group-hover:text-white`
-                  }`}
+                  className={`flex items-center justify-center w-12 h-12 rounded-2xl 
+                    transition-all duration-300 ${
+                      active === name
+                        ? `bg-gradient-to-br ${bgActiveColorMap[name]} text-white shadow-lg`
+                        : `bg-gray-900/80 ${iconColorMap[name]}`
+                    }`}
                 >
-                  <Icon size={20} strokeWidth={2} />
+                  <Icon size={22} strokeWidth={2} className="align-middle" />
                 </div>
+
+                {/* Label */}
                 <span
                   className={
-                    "ml-2 transition-all duration-300 overflow-hidden whitespace-nowrap " +
+                    "ml-3 text-sm transition-all duration-300 overflow-hidden whitespace-nowrap " +
                     "lg:max-w-0 group-hover:lg:max-w-xs lg:opacity-0 group-hover:lg:opacity-100 " +
-                    (active === name
-                      ? "text-white"
-                      : `${iconColorMap[name]}`)
+                    (active === name ? "text-white" : `${iconColorMap[name]}`)
                   }
                 >
                   {name}
