@@ -35,13 +35,15 @@ export default function UsageTrends() {
 
   useEffect(() => {
     setIsLoading(true);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setCpuBefore(generateRandomArray(weekLabels.length, 30, 80));
       setCpuAfter(generateRandomArray(weekLabels.length, 50, 95));
       setStorageValues(generateRandomArray(weekLabels.length, 40, 90));
       setMonthlyValues(generateRandomArray(monthLabels.length, 45, 100));
       setIsLoading(false);
     }, 800);
+
+    return () => clearTimeout(timer);
   }, [region]);
 
   const charts = [
@@ -78,20 +80,42 @@ export default function UsageTrends() {
   const prevSlide = () =>
     setCurrentIndex((prev) => (prev - 1 + charts.length) % charts.length);
 
+  // KPI helpers
+  const avg = (arr) =>
+    arr && arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+  const avgCpu = Math.round(avg(cpuAfter) || 0);
+  const peakCpu =
+    cpuAfter && cpuAfter.length ? Math.max(...cpuAfter) : 0;
+  const highLoadDays =
+    cpuAfter && cpuAfter.length
+      ? cpuAfter.filter((v) => v > 80).length
+      : 0;
+
   return (
-    <div className="
-      p-6 flex flex-col items-center 
-      bg-[#fffff0] dark:bg-gray-900
-      text-[#2d2a1f] dark:text-white 
-      min-h-screen transition-colors duration-300
-    ">
-      <h2 className="text-2xl font-bold mb-4 text-center text-[#2d2a1f] dark:text-white">
-        Interactive Usage Trends
-      </h2>
+    <div
+      className="
+        p-6 flex flex-col items-center 
+        bg-[#fffff0] dark:bg-gray-900
+        text-[#2d2a1f] dark:text-white 
+        min-h-screen transition-colors duration-300
+      "
+    >
+      {/* Title + subtle subtitle */}
+      <div className="text-center mb-4">
+        <h2 className="text-2xl font-bold text-[#2d2a1f] dark:text-white">
+          Interactive Usage Trends
+        </h2>
+        <p className="mt-1 text-xs text-[#6b6a5a] dark:text-gray-400 max-w-xl mx-auto">
+          Simulated Azure workload patterns to explore how feature engineering and regional demand impact resource usage.
+        </p>
+      </div>
 
       {/* Region Selector */}
-      <div className="flex items-center justify-center gap-3 mb-8">
-        <label className="text-sm font-medium text-[#225577] dark:text-orange-200">Select Region:</label>
+      <div className="flex items-center justify-center gap-3 mb-6">
+        <label className="text-sm font-medium text-[#225577] dark:text-orange-200">
+          Select Region:
+        </label>
         <select
           value={region}
           onChange={(e) => setRegion(e.target.value)}
@@ -104,9 +128,31 @@ export default function UsageTrends() {
           "
         >
           {regions.map((r) => (
-            <option key={r} value={r} className="text-[#2d2a1f] dark:text-orange-100">{r}</option>
+            <option
+              key={r}
+              value={r}
+              className="text-[#2d2a1f] dark:text-orange-100"
+            >
+              {r}
+            </option>
           ))}
         </select>
+      </div>
+
+      {/* KPI strip */}
+      <div className="flex flex-wrap items-center justify-center gap-4 mb-8 text-xs">
+        <div className="px-3 py-2 rounded-xl bg-[#e4ecfb] dark:bg-gray-800 text-[#225577] dark:text-orange-100 shadow-sm">
+          <span className="font-semibold mr-1">Avg CPU:</span>
+          <span>{isNaN(avgCpu) ? "--" : `${avgCpu}%`}</span>
+        </div>
+        <div className="px-3 py-2 rounded-xl bg-[#e4ecfb] dark:bg-gray-800 text-[#225577] dark:text-orange-100 shadow-sm">
+          <span className="font-semibold mr-1">Peak CPU:</span>
+          <span>{peakCpu || peakCpu === 0 ? `${peakCpu}%` : "--"}</span>
+        </div>
+        <div className="px-3 py-2 rounded-xl bg-[#e4ecfb] dark:bg-gray-800 text-[#225577] dark:text-orange-100 shadow-sm">
+          <span className="font-semibold mr-1">Days &gt; 80%:</span>
+          <span>{highLoadDays || highLoadDays === 0 ? highLoadDays : "--"}</span>
+        </div>
       </div>
 
       {/* Chart Slider */}
@@ -130,15 +176,22 @@ export default function UsageTrends() {
         <div className="relative h-[700px] flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.div
-              key={charts[currentIndex].id}
+              key={charts[currentIndex].id + (isLoading ? "-loading" : "-loaded")}
               initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.5 }}
               className="absolute w-full flex flex-col items-center"
             >
               {isLoading ? (
-                <div className="text-center text-[#557399]">Loading data...</div>
+                <div className="w-full max-w-5xl">
+                  {/* Skeleton card */}
+                  <div className="rounded-2xl bg-white/70 dark:bg-gray-800/60 shadow-md p-6 animate-pulse">
+                    <div className="h-4 w-48 bg-[#d9e3f5] dark:bg-gray-700 rounded mb-4" />
+                    <div className="h-72 w-full bg-[#e4ecfb] dark:bg-gray-700 rounded" />
+                    <div className="mt-4 h-3 w-32 bg-[#d9e3f5] dark:bg-gray-700 rounded" />
+                  </div>
+                </div>
               ) : (
                 <div className="relative group w-full max-w-5xl">
                   <ChartCard
@@ -187,6 +240,16 @@ export default function UsageTrends() {
           ></div>
         ))}
       </div>
+
+      {/* Dynamic tip under indicators */}
+      <p className="mt-3 text-[11px] text-[#6b6a5a] dark:text-gray-400 text-center max-w-md">
+        {currentIndex === 0 &&
+          "Tip: Compare Before vs After to see the impact of feature engineering on CPU load."}
+        {currentIndex === 1 &&
+          "Tip: Switch regions to quickly spot where capacity risks are highest."}
+        {currentIndex === 2 &&
+          "Tip: Use seasonal patterns to plan capacity for peak weeks and months."}
+      </p>
     </div>
   );
 }

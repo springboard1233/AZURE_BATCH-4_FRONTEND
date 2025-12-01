@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import ForecastVisualizations from "../components/ForecastVisualizations";
 import {
   ResponsiveContainer,
   LineChart,
@@ -21,7 +22,6 @@ import {
   Network,
 } from "lucide-react";
 import ForecastForm from "../components/ForecastForm";
-import ForecastVisualizations from "../components/ForecastVisualizations";
 
 export default function Forecasts() {
   const [filters, setFilters] = useState({
@@ -48,9 +48,7 @@ export default function Forecasts() {
     );
     const storageForecast = Array.from({ length: 7 }, (_, i) =>
       Number(
-        (storageCurrent +
-          i * ((storageNext - storageCurrent) / 6)
-        ).toFixed(2)
+        (storageCurrent + i * ((storageNext - storageCurrent) / 6)).toFixed(2)
       )
     );
 
@@ -126,9 +124,7 @@ export default function Forecasts() {
   }, [metrics, filters.service]);
 
   useEffect(() => {
-    setCurrentSlide((slide) =>
-      Math.min(slide, filteredMetrics.length - 1)
-    );
+    setCurrentSlide((slide) => Math.min(slide, filteredMetrics.length - 1));
   }, [filteredMetrics.length]);
 
   const handleApplyFilters = (newFilters) => {
@@ -199,20 +195,36 @@ export default function Forecasts() {
     }),
   };
 
+  const activeMetric = filteredMetrics[currentSlide];
+
   return (
     <div className="p-6 md:p-8 lg:p-10 min-h-screen bg-[#fffff0] dark:bg-gray-900 transition-colors duration-500">
       <ForecastForm onSubmit={handleApplyFilters} />
 
-      <div className="my-8 border-t border-[#b7d2f7]/30"></div>
+      <div className="my-8 border-t border-[#b7d2f7]/30" />
 
       <motion.h1
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-3xl md:text-4xl font-extrabold text-center mb-8 text-[#282828] dark:bg-clip-text dark:text-transparent dark:bg-gradient-to-r dark:from-fuchsia-600 dark:to-orange-400"
+        className="text-3xl md:text-4xl font-extrabold text-center mb-3 text-[#282828] dark:bg-clip-text dark:text-transparent dark:bg-gradient-to-r dark:from-fuchsia-600 dark:to-orange-400"
       >
         Azure Demand Forecasting
       </motion.h1>
+
+      {/* Context bar */}
+      <div className="max-w-6xl mx-auto mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#557399] dark:text-orange-100">
+          <span className="px-2.5 py-1 rounded-full bg-[#e0f3fa] dark:bg-fuchsia-800/60 font-medium">
+            Active view: {filters.region || "All regions"} ·{" "}
+            {filters.service || "All services"} ·{" "}
+            {filters.timeHorizon || "Default horizon"}
+          </span>
+          <span className="opacity-80">
+            7-week predictive outlook · updated when filters change
+          </span>
+        </div>
+      </div>
 
       <div className="max-w-6xl mx-auto">
         <div className="relative">
@@ -227,7 +239,7 @@ export default function Forecasts() {
             >
               {filteredMetrics.length > 0 ? (
                 <ForecastCard
-                  metric={filteredMetrics[currentSlide]}
+                  metric={activeMetric}
                   COLORS={COLORS}
                   makeLineData={makeLineData}
                 />
@@ -267,7 +279,7 @@ export default function Forecasts() {
             <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-[#b7d2f7] dark:bg-fuchsia-700 rounded" />
             <ul className="space-y-8">
               {optimizations.map((opt, i) => {
-                const active = filteredMetrics[currentSlide]?.id === opt.metric;
+                const active = activeMetric?.id === opt.metric;
                 const expanded = activeOpt === opt.id;
                 return (
                   <motion.li
@@ -364,10 +376,8 @@ export default function Forecasts() {
           </div>
         </div>
 
-        {/* New Forecast visualizations section */}
-        <div className="mt-12">
-          <ForecastVisualizations />
-        </div>
+        {/* Milestone 3 visualizations */}
+        <ForecastVisualizations />
       </div>
     </div>
   );
@@ -375,16 +385,20 @@ export default function Forecasts() {
 
 // ----- ForecastCard -----
 function ForecastCard({ metric: m, COLORS, makeLineData }) {
+  if (!m) return null;
+
   return (
-    <div
-      className={`
-        rounded-3xl px-10 py-9 shadow-2xl border-4 border-[#b7d2f7] 
-        bg-gradient-to-br from-[#f3f5f7] to-[#ececec]
-        dark:bg-gradient-to-br dark:from-fuchsia-600 dark:to-orange-400 dark:border-none
+    <motion.div
+      whileHover={{ y: -6, scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 180, damping: 18 }}
+      className="
+        rounded-3xl px-10 py-9 shadow-2xl border border-[#c5d7f3] 
+        bg-gradient-to-br from-[#f7f9fc] via-[#f1f3f8] to-[#ececec]
+        dark:bg-gradient-to-br dark:from-gray-900 dark:via-fuchsia-800 dark:to-orange-500 dark:border-none
         backdrop-blur-md 
         flex flex-col justify-center items-center
         transition-all
-      `}
+      "
       style={{
         minHeight: 420,
         maxWidth: "700px",
@@ -392,25 +406,21 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
       }}
     >
       <div className="flex flex-col items-center mb-2">
-        <div className="w-16 h-16 rounded-xl bg-[#e0f3fa] dark:bg-fuchsia-600 flex items-center justify-center mb-2">
+        <div className="w-16 h-16 rounded-xl bg-[#e0f3fa] dark:bg-black/40 flex items-center justify-center mb-2 shadow-md shadow-[#b7d2f7]/40">
           {m.icon}
         </div>
         <h2 className="text-3xl font-bold mb-1 text-[#222] dark:text-white">
           {m.title}
         </h2>
-        <div className="text-base font-light text-[#557399] dark:text-orange-50 mb-3">
-          Forecast Overview
+        <div className="text-sm font-light text-[#557399] dark:text-orange-50 mb-1">
+          7-week forecast overview
         </div>
       </div>
 
       <div className="flex flex-col md:flex-row items-center md:items-start w-full gap-8 justify-between">
         {/* Pie / Donut chart & current */}
         <div className="flex flex-col items-center">
-          <PieChart
-            width={120}
-            height={120}
-            style={{ marginBottom: 10 }}
-          >
+          <PieChart width={120} height={120} style={{ marginBottom: 10 }}>
             <Pie
               data={m.pie}
               cx="50%"
@@ -450,7 +460,7 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
         </div>
 
         {/* Line chart */}
-        <div className="flex-1 bg-white/70 dark:bg-white/10 rounded-xl p-6 backdrop-blur-sm shadow-lg mt-6 md:mt-0">
+        <div className="flex-1 bg-white/80 dark:bg-black/30 rounded-xl p-6 backdrop-blur-sm shadow-lg mt-6 md:mt-0">
           <div className="h-44 md:h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={makeLineData(m.forecast)}>
@@ -459,35 +469,42 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
                     <stop
                       offset="0%"
                       stopColor="#b7d2f7"
-                      stopOpacity={0.8}
+                      stopOpacity={0.9}
                     />
                     <stop
                       offset="80%"
-                      stopColor="#bfcfdc"
-                      stopOpacity={0.5}
+                      stopColor="#f97316"
+                      stopOpacity={0.7}
                     />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="#e0e7ef"
+                  vertical={false}
                 />
                 <XAxis
                   dataKey="name"
-                  tick={{ fill: "#557399", fontWeight: 600 }}
+                  tick={{ fill: "#557399", fontWeight: 600, fontSize: 11 }}
                 />
-                <YAxis tick={{ fill: "#557399", fontWeight: 600 }} />
+                <YAxis
+                  tick={{ fill: "#557399", fontWeight: 600, fontSize: 11 }}
+                />
                 <ReTooltip
                   contentStyle={{
                     background: "#eef3f8",
-                    borderRadius: 8,
-                    color: "#222",
+                    borderRadius: 10,
+                    border: "1px solid #c5d7f3",
+                    boxShadow: "0 10px 25px rgba(15, 23, 42, 0.15)",
+                    padding: "8px 10px",
                   }}
+                  labelStyle={{ color: "#1f2933", fontWeight: 600 }}
+                  itemStyle={{ fontSize: 12 }}
                 />
                 <ReLegend
                   verticalAlign="bottom"
-                  height={16}
-                  wrapperStyle={{ color: "#b7d2f7" }}
+                  height={18}
+                  wrapperStyle={{ color: "#4b5563", fontSize: 11 }}
                 />
                 <Line
                   type="monotone"
@@ -502,7 +519,7 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
           </div>
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-[#557399]/90 dark:text-orange-50/90">
-              7-Week projection
+              7-week projection · hover points for exact values
             </div>
             <div className="font-bold text-lg text-[#2d2a1f] dark:text-white drop-shadow">
               {Array.isArray(m.forecast)
@@ -513,6 +530,6 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

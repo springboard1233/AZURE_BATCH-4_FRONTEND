@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   AreaChart,
@@ -69,24 +69,73 @@ const generateRandomData = () => ({
     },
   ],
   revenueTrend: [
-    { name: "Jan", Revenue: getRandomInt(3500, 4500), Profit: getRandomInt(2000, 2900) },
-    { name: "Feb", Revenue: getRandomInt(2500, 3500), Profit: getRandomInt(1100, 1800) },
-    { name: "Mar", Revenue: getRandomInt(5500, 6500), Profit: getRandomInt(3300, 4300) },
-    { name: "Apr", Revenue: getRandomInt(5200, 6000), Profit: getRandomInt(3400, 4100) },
-    { name: "May", Revenue: getRandomInt(1600, 2200), Profit: getRandomInt(3900, 5000) },
-    { name: "Jun", Revenue: getRandomInt(2000, 2600), Profit: getRandomInt(2600, 4200) },
-    { name: "Jul", Revenue: getRandomInt(3000, 4010), Profit: getRandomInt(3300, 4300) },
+    {
+      name: "Jan",
+      Revenue: getRandomInt(3500, 4500),
+      Profit: getRandomInt(2000, 2900),
+    },
+    {
+      name: "Feb",
+      Revenue: getRandomInt(2500, 3500),
+      Profit: getRandomInt(1100, 1800),
+    },
+    {
+      name: "Mar",
+      Revenue: getRandomInt(5500, 6500),
+      Profit: getRandomInt(3300, 4300),
+    },
+    {
+      name: "Apr",
+      Revenue: getRandomInt(5200, 6000),
+      Profit: getRandomInt(3400, 4100),
+    },
+    {
+      name: "May",
+      Revenue: getRandomInt(1600, 2200),
+      Profit: getRandomInt(3900, 5000),
+    },
+    {
+      name: "Jun",
+      Revenue: getRandomInt(2000, 2600),
+      Profit: getRandomInt(2600, 4200),
+    },
+    {
+      name: "Jul",
+      Revenue: getRandomInt(3000, 4010),
+      Profit: getRandomInt(3300, 4300),
+    },
   ],
   campaignPerformance: [
-    { name: "Email Campaign", Sent: getRandomInt(3500, 4500), Clicked: getRandomInt(2000, 2900) },
-    { name: "Social Ads", Sent: getRandomInt(2500, 3500), Clicked: getRandomInt(1100, 1800) },
-    { name: "Partnership", Sent: getRandomInt(1500, 2500), Clicked: getRandomInt(700, 1300) },
-    { name: "Retargeting", Sent: getRandomInt(2200, 3200), Clicked: getRandomInt(3400, 4200) },
+    {
+      name: "Email Campaign",
+      Sent: getRandomInt(3500, 4500),
+      Clicked: getRandomInt(2000, 2900),
+    },
+    {
+      name: "Social Ads",
+      Sent: getRandomInt(2500, 3500),
+      Clicked: getRandomInt(1100, 1800),
+    },
+    {
+      name: "Partnership",
+      Sent: getRandomInt(1500, 2500),
+      Clicked: getRandomInt(700, 1300),
+    },
+    {
+      name: "Retargeting",
+      Sent: getRandomInt(2200, 3200),
+      Clicked: getRandomInt(3400, 4200),
+    },
   ],
   recentActivity: [
     { id: 1, text: "New lead assigned to John Doe.", time: "5 mins ago", tag: "Lead" },
     { id: 2, text: "Project Apollo budget adjusted.", time: "1 hour ago", tag: "Finance" },
-    { id: 3, text: "System update completed successfully.", time: "4 hours ago", tag: "System" },
+    {
+      id: 3,
+      text: "System update completed successfully.",
+      time: "4 hours ago",
+      tag: "System",
+    },
     { id: 4, text: "Customer feedback received.", time: "Yesterday", tag: "Support" },
   ],
 });
@@ -150,11 +199,8 @@ const KPICard = ({ title, value, change, icon: Icon, color, bgColor }) => {
 };
 
 export default function Insights() {
-  const [insightsData, setInsightsData] = useState(generateRandomData());
-
-  useEffect(() => {
-    setInsightsData(generateRandomData());
-  }, []);
+  // fresh random dataset per mount / reload
+  const [insightsData] = useState(() => generateRandomData());
 
   const modelMetrics = [
     {
@@ -185,9 +231,15 @@ export default function Insights() {
 
   return (
     <div className="p-4 md:p-0">
-      <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-6">
-        Insights Dashboard
-      </h1>
+      {/* Page title + subtitle */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">
+          Insights Dashboard
+        </h1>
+        <p className="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
+          Business KPIs, campaign performance, and model health in a single unified view.
+        </p>
+      </div>
 
       {/* KPI grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -206,24 +258,26 @@ export default function Insights() {
           <ResponsiveContainer width="100%" height={320}>
             <AreaChart data={insightsData.revenueTrend}>
               <defs>
+                {/* Teal for Revenue */}
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#A7F3D0" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#A7F3D0" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#0f766e" stopOpacity={0.85} />
+                  <stop offset="95%" stopColor="#0f766e" stopOpacity={0} />
                 </linearGradient>
+                {/* Indigo for Profit */}
                 <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FCA311" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#FCA311" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.85} />
+                  <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="name" stroke="#8C7E6B" />
-              <YAxis stroke="#8C7E6B" />
-              <CartesianGrid strokeDasharray="3 3" stroke="#A78B64" />
+              <XAxis dataKey="name" stroke="#64748b" />
+              <YAxis stroke="#64748b" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <Tooltip
                 contentStyle={{
                   borderRadius: "8px",
-                  border: "1px solid #A78B64",
+                  border: "1px solid #cbd5f5",
                   backgroundColor: "#f8fafc",
-                  color: "#834c24",
+                  color: "#0f172a",
                   padding: "8px",
                 }}
               />
@@ -231,7 +285,7 @@ export default function Insights() {
               <Area
                 type="monotone"
                 dataKey="Revenue"
-                stroke="#A7F3D0"
+                stroke="#0f766e"
                 fillOpacity={1}
                 fill="url(#colorRevenue)"
                 strokeWidth={2}
@@ -239,7 +293,7 @@ export default function Insights() {
               <Area
                 type="monotone"
                 dataKey="Profit"
-                stroke="#FCA311"
+                stroke="#4f46e5"
                 fillOpacity={1}
                 fill="url(#colorProfit)"
                 strokeWidth={2}
@@ -259,36 +313,48 @@ export default function Insights() {
               layout="vertical"
               margin={{ top: 20, right: 20, left: 40, bottom: 20 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#A78B64" />
-              <XAxis type="number" stroke="#8C7E6B" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis type="number" stroke="#64748b" />
               <YAxis
                 dataKey="name"
                 type="category"
-                stroke="#8C7E6B"
+                stroke="#64748b"
                 width={120}
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: "8px",
-                  border: "1px solid #A78B64",
+                  border: "1px solid #cbd5f5",
                   backgroundColor: "#f8fafc",
-                  color: "#834c24",
+                  color: "#0f172a",
                   padding: "8px",
                 }}
               />
               <Legend wrapperStyle={{ paddingLeft: 16 }} />
-              <Bar dataKey="Sent" fill="#A7F3D0" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Clicked" fill="#FCA311" radius={[4, 4, 0, 0]} />
+              {/* Teal for Sent, Orange for Clicked */}
+              <Bar dataKey="Sent" fill="#0f766e" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Clicked" fill="#f97316" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
       </div>
 
-      {/* Row 2: model comparison section */}
+      {/* Row 2: model comparison section with chip */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-          Model Performance Overview
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Model Performance Overview
+            </h2>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Compare error metrics and speed across your forecasting models.
+            </p>
+          </div>
+          <span className="hidden md:inline-flex items-center px-3 py-1 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200 border border-emerald-100 dark:border-emerald-700">
+            Forecast models
+          </span>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <Card>
             <ModelMetricsBarChart models={modelMetrics} />

@@ -26,6 +26,7 @@ import Reports from "./pages/Reports";
 import Insights from "./pages/Insights";
 import IntroPage from "./pages/IntroPage";
 
+
 /* ---------------- CHAT ASSISTANT COMPONENT ---------------- */
 
 function ChatAssistant({ isOpen, onClose }) {

@@ -8,6 +8,7 @@ import {
 } from "recharts";
 
 export default function ModelRadarChart({ models }) {
+  // Convert model data into radar chart series
   const radarData = [
     { metric: "MAE", LSTM: models[0].mae, RF: models[1].mae, ARIMA: models[2].mae },
     { metric: "RMSE", LSTM: models[0].rmse, RF: models[1].rmse, ARIMA: models[2].rmse },
@@ -38,13 +39,7 @@ export default function ModelRadarChart({ models }) {
           <PolarAngleAxis dataKey="metric" />
           <Tooltip />
           <Radar name="LSTM" dataKey="LSTM" stroke="#4F46E5" fill="#4F46E5" fillOpacity={0.6} />
-          <Radar
-            name="Random Forest"
-            dataKey="RF"
-            stroke="#10B981"
-            fill="#10B981"
-            fillOpacity={0.6}
-          />
+          <Radar name="Random Forest" dataKey="RF" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
           <Radar name="ARIMA" dataKey="ARIMA" stroke="#F59E0B" fill="#F59E0B" fillOpacity={0.6} />
         </RadarChart>
       </ResponsiveContainer>
