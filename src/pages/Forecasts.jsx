@@ -12,6 +12,8 @@ import {
   PieChart,
   Pie,
   Cell,
+  BarChart,
+  Bar,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -22,6 +24,70 @@ import {
   Network,
 } from "lucide-react";
 import ForecastForm from "../components/ForecastForm";
+import { showHighRiskAlert } from "../App";
+
+// ---- Simple rule-based recommendation helper ----
+function getCapacityRecommendation({ region, resource, forecastPct }) {
+  let level, delta, text;
+
+  if (forecastPct >= 85) {
+    level = "High Load";
+    delta = 12;
+    text = `Increase ${resource} capacity by +${delta}%`;
+  } else if (forecastPct <= 50) {
+    level = "Low Load";
+    delta = 15;
+    text = `Consider reducing ${resource} capacity by -${delta}% to save cost`;
+  } else {
+    level = "Moderate Load";
+    delta = 0;
+    text = `Keep ${resource} capacity steady and monitor usage`;
+  }
+
+  return {
+    region,
+    resource,
+    forecastPct,
+    level,
+    delta,
+    text,
+  };
+}
+
+// capacity planning random data generator
+const generateCapacityData = () => {
+  const base = 120;
+  return [
+    {
+      date: "Week 1",
+      forecast: base,
+      capacity: base + 30 + Math.round(Math.random() * 10),
+      lower: base - 20,
+      upper: base + 15,
+    },
+    {
+      date: "Week 2",
+      forecast: base + 15,
+      capacity: base + 10 + Math.round(Math.random() * 10),
+      lower: base - 10,
+      upper: base + 25,
+    },
+    {
+      date: "Week 3",
+      forecast: base + 30,
+      capacity: base + 20 + Math.round(Math.random() * 10),
+      lower: base,
+      upper: base + 35,
+    },
+    {
+      date: "Week 4",
+      forecast: base + 50,
+      capacity: base + 35 + Math.round(Math.random() * 10),
+      lower: base + 10,
+      upper: base + 45,
+    },
+  ];
+};
 
 export default function Forecasts() {
   const [filters, setFilters] = useState({
@@ -32,6 +98,9 @@ export default function Forecasts() {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [activeOpt, setActiveOpt] = useState(null);
+
+  const [workloadDelta, setWorkloadDelta] = useState(0); // -50 to +50
+  const [trafficDelta, setTrafficDelta] = useState(0);   // -50 to +50
 
   const metrics = useMemo(() => {
     const randPercent = (min, max) =>
@@ -196,6 +265,96 @@ export default function Forecasts() {
   };
 
   const activeMetric = filteredMetrics[currentSlide];
+
+  // ------- Capacity Planning data in state -------
+  const [capacityData, setCapacityData] = useState(() => generateCapacityData());
+
+  useEffect(() => {
+    setCapacityData(generateCapacityData());
+  }, []);
+
+  const getRisk = (forecast, capacity) => {
+    const gap = capacity - forecast;
+    if (gap >= 0.1 * forecast) return "Sufficient"; // green
+    if (gap < -0.05 * forecast) return "Shortage";  // red
+    return "Over / Slight risk";                    // yellow
+  };
+
+  const capacityRows = capacityData.map((d) => ({
+    ...d,
+    gap: d.capacity - d.forecast,
+    status: getRisk(d.forecast, d.capacity),
+  }));
+  // ------------------------------------------------
+
+  // ---- Auto recommendations (simple rule-based) ----
+  const region = filters.region || "East-US";
+
+  const recommendations = useMemo(() => {
+    return metrics.map((m) => {
+      const forecastArr = Array.isArray(m.forecast) ? m.forecast : [];
+      const nextCycle = forecastArr[forecastArr.length - 1] ?? m.current;
+
+      const forecastPct =
+        m.unit === "%" ? nextCycle : Math.min(100, Math.round(nextCycle));
+
+      return getCapacityRecommendation({
+        region,
+        resource: m.title,
+        forecastPct,
+      });
+    });
+  }, [metrics, region]);
+  // --------------------------------------------------
+
+  // ---- What-If simulated impact (frontend-only) ----
+  const whatIfResults = useMemo(() => {
+    const cpuMetric = metrics.find((m) => m.id === "cpu");
+    const storageMetric = metrics.find((m) => m.id === "storage");
+
+    if (!cpuMetric || !storageMetric) return null;
+
+    const baseCpu =
+      cpuMetric.forecast?.[cpuMetric.forecast.length - 1] ?? cpuMetric.current;
+    const baseStorage =
+      storageMetric.forecast?.[storageMetric.forecast.length - 1] ??
+      storageMetric.current;
+
+    const cpuFactor = 1 + workloadDelta / 100;
+    const storageFactor = 1 + trafficDelta / 100;
+
+    const simulatedCpu = Math.round(baseCpu * cpuFactor);
+    const simulatedStorage = Number((baseStorage * storageFactor).toFixed(2));
+
+    return { baseCpu, baseStorage, simulatedCpu, simulatedStorage };
+  }, [metrics, workloadDelta, trafficDelta]);
+  // --------------------------------------------------
+
+  // --------- PREDICTION ALERT (toast) -------------
+  useEffect(() => {
+    const week4 = capacityRows.find((r) => r.date === "Week 4");
+    if (week4 && week4.status === "Shortage") {
+      showHighRiskAlert({
+        resource: "Capacity (Week 4)",
+        usage: week4.forecast,
+        threshold: week4.capacity,
+      });
+    }
+
+    const cpuMetric = metrics.find((m) => m.id === "cpu");
+    if (cpuMetric && Array.isArray(cpuMetric.forecast)) {
+      const nextWeekCpu = cpuMetric.forecast[cpuMetric.forecast.length - 1];
+      const cpuThreshold = 80;
+      if (nextWeekCpu > cpuThreshold) {
+        showHighRiskAlert({
+          resource: "CPU (next week)",
+          usage: nextWeekCpu,
+          threshold: cpuThreshold,
+        });
+      }
+    }
+  }, [capacityRows, metrics]);
+  // -----------------------------------------------
 
   return (
     <div className="p-6 md:p-8 lg:p-10 min-h-screen bg-[#fffff0] dark:bg-gray-900 transition-colors duration-500">
@@ -376,6 +535,261 @@ export default function Forecasts() {
           </div>
         </div>
 
+        {/* Auto Recommendations (Milestone 4) */}
+        <div className="mt-10 max-w-6xl mx-auto">
+          <h3 className="text-2xl font-semibold mb-4 text-[#2d2a1f] dark:text-orange-300">
+            Optimization Suggestions
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {recommendations.map((rec) => (
+              <div
+                key={rec.resource}
+                className="rounded-2xl border border-[#b7d2f7] dark:border-fuchsia-700 bg-[#f7f7f5] dark:bg-gray-900/60 p-4 shadow-sm"
+              >
+                <div className="text-xs text-[#557399] dark:text-orange-100 mb-1">
+                  Region: <span className="font-semibold">{rec.region}</span>
+                </div>
+                <div className="text-sm font-semibold text-[#2d2a1f] dark:text-white">
+                  {rec.resource}
+                </div>
+                <div className="text-xs text-[#557399] dark:text-orange-200 mt-1">
+                  Forecast next cycle:{" "}
+                  <span className="font-semibold">
+                    {rec.forecastPct}% ({rec.level})
+                  </span>
+                </div>
+                <div className="mt-3 text-sm text-[#1f2933] dark:text-orange-50">
+                  Recommendation:{" "}
+                  <span className="font-semibold">{rec.text}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* What-If Simulator (Milestone 4) */}
+        <div className="mt-10 max-w-6xl mx-auto">
+          <h3 className="text-2xl font-semibold mb-4 text-[#2d2a1f] dark:text-orange-300">
+            What-If Simulator
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Controls */}
+            <div className="rounded-2xl border border-[#b7d2f7] dark:border-fuchsia-700 bg-[#f7f7f5] dark:bg-gray-900/60 p-4 shadow-sm">
+              <p className="text-sm font-medium text-[#2d2a1f] dark:text-white mb-3">
+                Adjust hypothetical changes and see impact on CPU & Storage.
+              </p>
+
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-[#557399] dark:text-orange-100">
+                    Workload change (%)
+                  </span>
+                  <span className="text-xs font-semibold text-[#225577] dark:text-orange-200">
+                    {workloadDelta > 0 ? `+${workloadDelta}` : workloadDelta}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={-50}
+                  max={50}
+                  step={5}
+                  value={workloadDelta}
+                  onChange={(e) => setWorkloadDelta(Number(e.target.value))}
+                  className="w-full accent-blue-600"
+                />
+                <div className="flex justify-between text-[10px] text-[#9ca3af] mt-1">
+                  <span>-50%</span>
+                  <span>0%</span>
+                  <span>+50%</span>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-[#557399] dark:text-orange-100">
+                    Traffic change (%)
+                  </span>
+                  <span className="text-xs font-semibold text-[#225577] dark:text-orange-200">
+                    {trafficDelta > 0 ? `+${trafficDelta}` : trafficDelta}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={-50}
+                  max={50}
+                  step={5}
+                  value={trafficDelta}
+                  onChange={(e) => setTrafficDelta(Number(e.target.value))}
+                  className="w-full accent-indigo-600"
+                />
+                <div className="flex justify-between text-[10px] text-[#9ca3af] mt-1">
+                  <span>-50%</span>
+                  <span>0%</span>
+                  <span>+50%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Result card */}
+            <div className="rounded-2xl border border-[#b7d2f7] dark:border-fuchsia-700 bg-white dark:bg-gray-900/60 p-4 shadow-sm">
+              {whatIfResults ? (
+                <>
+                  <p className="text-sm font-medium text-[#2d2a1f] dark:text-white mb-3">
+                    Simulated next-cycle impact
+                  </p>
+                  <div className="space-y-3 text-xs text-[#4b5563] dark:text-orange-100">
+                    <div>
+                      <div className="font-semibold mb-1">CPU</div>
+                      <div className="flex justify-between">
+                        <span>Base forecast</span>
+                        <span className="font-semibold">
+                          {whatIfResults.baseCpu}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>With workload change</span>
+                        <span className="font-semibold text-blue-700 dark:text-blue-300">
+                          {whatIfResults.simulatedCpu}%
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-semibold mb-1">Storage</div>
+                      <div className="flex justify-between">
+                        <span>Base forecast</span>
+                        <span className="font-semibold">
+                          {whatIfResults.baseStorage} TB
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>With traffic change</span>
+                        <span className="font-semibold text-indigo-700 dark:text-indigo-300">
+                          {whatIfResults.simulatedStorage} TB
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm text-[#6b7280] dark:text-gray-300">
+                  Not enough data to run what-if simulation.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Capacity Planning section */}
+        <div className="mt-14 space-y-6">
+          <h3 className="text-2xl font-semibold text-[#2d2a1f] dark:text-orange-300">
+            Capacity Planning
+          </h3>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {/* Forecasted demand with confidence */}
+            <div className="bg-white border border-[#e2e8f0] rounded-2xl p-4 shadow-sm dark:bg-gray-900/60 dark:border-gray-800">
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Forecasted Demand (with Confidence)
+              </h4>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={capacityRows}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="date" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <ReTooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="upper"
+                    stroke="#4f46e5"
+                    strokeWidth={0}
+                    dot={false}
+                    activeDot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="lower"
+                    stroke="#4f46e5"
+                    strokeWidth={0}
+                    dot={false}
+                    activeDot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="forecast"
+                    stroke="#f97316"
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Capacity vs Forecast bar chart */}
+            <div className="bg-white border border-[#e2e8f0] rounded-2xl p-4 shadow-sm dark:bg-gray-900/60 dark:border-gray-800">
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Capacity vs Forecast
+              </h4>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={capacityRows}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="date" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <ReTooltip />
+                  <ReLegend />
+                  <Bar dataKey="forecast" fill="#f97316" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="capacity" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Risk indicators table */}
+          <div className="bg-white border border-[#e2e8f0] rounded-2xl p-4 shadow-sm dark:bg-gray-900/60 dark:border-gray-800">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              Capacity Risk by Week
+            </h4>
+            <table className="w-full text-xs text-left">
+              <thead className="text-gray-500 dark:text-gray-400">
+                <tr>
+                  <th className="py-2 pr-3">Week</th>
+                  <th className="py-2 pr-3">Forecast</th>
+                  <th className="py-2 pr-3">Capacity</th>
+                  <th className="py-2 pr-3">Gap</th>
+                  <th className="py-2 pr-3">Status</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-800 dark:text-gray-200">
+                {capacityRows.map((r) => (
+                  <tr
+                    key={r.date}
+                    className="border-t border-[#e5e7eb] dark:border-gray-800"
+                  >
+                    <td className="py-2 pr-3">{r.date}</td>
+                    <td className="py-2 pr-3">{r.forecast}</td>
+                    <td className="py-2 pr-3">{r.capacity}</td>
+                    <td className="py-2 pr-3">{r.gap}</td>
+                    <td className="py-2 pr-3">
+                      <span
+                        className={
+                          "px-2 py-0.5 rounded-full text-[11px] " +
+                          (r.status === "Sufficient"
+                            ? "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                            : r.status === "Shortage"
+                            ? "bg-red-500/10 text-red-700 dark:bg-red-500/15 dark:text-red-300"
+                            : "bg-yellow-500/10 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300")
+                        }
+                      >
+                        {r.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         {/* Milestone 3 visualizations */}
         <ForecastVisualizations />
       </div>
@@ -523,9 +937,8 @@ function ForecastCard({ metric: m, COLORS, makeLineData }) {
             </div>
             <div className="font-bold text-lg text-[#2d2a1f] dark:text-white drop-shadow">
               {Array.isArray(m.forecast)
-                ? m.forecast[m.forecast.length - 1]
-                : "-"}{" "}
-              {m.unit}
+                ? `${m.forecast[m.forecast.length - 1]} ${m.unit}`
+                : `- ${m.unit}`}
             </div>
           </div>
         </div>

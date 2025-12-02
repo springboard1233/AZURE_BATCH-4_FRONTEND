@@ -111,6 +111,50 @@ export default function Reports() {
     alert(`📊 Downloading ${type} report...`);
   };
 
+  // Step 2: backend-style recommendations (mocked for now)
+  const recommendations = [
+    {
+      id: 1,
+      region: "East US",
+      service: "Compute",
+      action: "Add",
+      amount: "+1500 units",
+    },
+    {
+      id: 2,
+      region: "West Europe",
+      service: "Storage",
+      action: "Reduce",
+      amount: "-700 TB",
+    },
+    {
+      id: 3,
+      region: "Central India",
+      service: "Compute",
+      action: "Add",
+      amount: "+900 units",
+    },
+  ];
+
+  // Simple CSV download for “Download Forecast Report (CSV)”
+  const handleDownloadCSV = () => {
+    const header = "Region,Service,Action,Amount\n";
+    const rows = recommendations
+      .map((r) => `${r.region},${r.service},${r.action},${r.amount}`)
+      .join("\n");
+    const csv = header + rows;
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "forecast_recommendations.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const tabs = [
     {
       id: "performance",
@@ -254,6 +298,68 @@ export default function Reports() {
           </div>
         </div>
       )}
+
+      {/* Step 2: Recommendations & Reports */}
+      <div className="max-w-5xl mx-auto mb-8 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Recommendations panel */}
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            Recommendations Panel
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            Displaying backend’s recommended capacity adjustments.
+          </p>
+          <ul className="space-y-2 text-sm">
+            {recommendations.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-center justify-between px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800/70"
+              >
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100">
+                    {r.region} {r.service}
+                  </div>
+                  <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Backend recommendation
+                  </div>
+                </div>
+                <span
+                  className={
+                    "px-3 py-1 rounded-full text-[11px] font-semibold " +
+                    (r.action === "Add"
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                      : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300")
+                  }
+                >
+                  {r.action} {r.amount}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Downloadable reports */}
+        <div className="flex flex-col gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+            Download Reports
+          </h3>
+          <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            Export forecast insights for offline sharing.
+          </p>
+          <button
+            onClick={handleDownloadCSV}
+            className="mt-1 px-3 py-2 text-xs font-medium rounded-lg bg-[#b7d2f7] text-[#1f2937] hover:bg-[#99bde7] shadow-sm dark:bg-fuchsia-600 dark:text-white dark:hover:bg-fuchsia-500"
+          >
+            ⬇️ Download Forecast Report (CSV)
+          </button>
+          <button
+            disabled
+            className="px-3 py-2 text-xs font-medium rounded-lg bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed"
+          >
+            ⬇️ Download Forecast Report (Excel/PDF)
+          </button>
+        </div>
+      </div>
 
       {/* Animated Content Card */}
       <AnimatePresence mode="wait">

@@ -10,6 +10,7 @@ import {
   Sparkles,
   Search,
   User,
+  BrainCircuit,
 } from "lucide-react";
 
 export default function Sidebar({ onSelect }) {
@@ -30,6 +31,7 @@ export default function Sidebar({ onSelect }) {
     Forecasts: "text-fuchsia-700 dark:text-fuchsia-400",
     Reports: "text-green-700 dark:text-green-400",
     Insights: "text-pink-500 dark:text-pink-400",
+    "Multi-Region": "text-cyan-400 dark:text-cyan-300",
   };
 
   const bgActiveColorMap = {
@@ -39,6 +41,7 @@ export default function Sidebar({ onSelect }) {
     Forecasts: "from-fuchsia-400 to-fuchsia-700",
     Reports: "from-green-300 to-green-700",
     Insights: "from-pink-400 to-pink-600",
+    "Multi-Region": "from-cyan-300 to-cyan-700",
   };
 
   const menuItems = [
@@ -47,6 +50,8 @@ export default function Sidebar({ onSelect }) {
     { name: "Forecasts", icon: Activity, badge: "Beta" },
     { name: "Reports", icon: ClipboardCheck },
     { name: "Insights", icon: FileText },
+    { name: "Model Dashboard", icon: BrainCircuit, badge: "New" },
+    { name: "Multi-Region", icon: BarChart3, badge: "New" },
   ];
 
   const filteredMenuItems = menuItems.filter((item) => {
@@ -73,7 +78,7 @@ export default function Sidebar({ onSelect }) {
 
       {/* Sidebar */}
       <aside
-        className={`group fixed lg:static top-0 left-0 h-full w-64 lg:w-20 hover:lg:w-64 
+        className={`group fixed lg:static top-0 left-0 h-full w-72 lg:w-24 hover:lg:w-72 
           bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-gray-100 px-5 py-5 shadow-2xl 
           border-r border-gray-800 flex flex-col justify-between transform 
           transition-all duration-300 ease-in-out z-40 
@@ -149,12 +154,10 @@ export default function Sidebar({ onSelect }) {
                       : "text-gray-400 hover:text-white hover:bg-gray-800/40 hover:-translate-y-[1px]"
                   }`}
               >
-                {/* Active glow bar */}
                 {active === name && (
                   <span className="absolute left-0 h-7 w-1 rounded-full bg-cyan-400/80 shadow-[0_0_12px_rgba(34,211,238,0.8)]" />
                 )}
 
-                {/* Icon pill */}
                 <div
                   className={`flex items-center justify-center w-11 h-11 rounded-2xl 
                     transition-all duration-300 ${
@@ -166,7 +169,6 @@ export default function Sidebar({ onSelect }) {
                   <Icon size={20} strokeWidth={2} className="align-middle" />
                 </div>
 
-                {/* Label + badge */}
                 <div
                   className={
                     "ml-3 flex items-center justify-between w-full pr-1 text-sm transition-all duration-300 overflow-hidden whitespace-nowrap " +
@@ -199,7 +201,7 @@ export default function Sidebar({ onSelect }) {
           </nav>
         </div>
 
-        {/* Footer: tiny summary card + shortcuts */}
+        {/* Footer */}
         <footer className="mt-6">
           <div className="hidden lg:flex group-hover:lg:flex flex-col gap-2 text-xs text-gray-400 lg:opacity-0 group-hover:lg:opacity-100 transition-all duration-300">
             <div className="rounded-2xl bg-gray-900/70 border border-gray-700/80 px-3 py-2 flex items-center gap-2">

@@ -17,6 +17,9 @@ import {
   Line,
 } from "recharts";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import { ThemeProvider } from "./context/ThemeContext";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
@@ -25,7 +28,20 @@ import Forecasts from "./pages/Forecasts";
 import Reports from "./pages/Reports";
 import Insights from "./pages/Insights";
 import IntroPage from "./pages/IntroPage";
+import ModelMonitoring from "./pages/ModelMonitoring";
+import MultiRegionDashboard from "./pages/MultiRegionDashboard";
 
+/* ------------ ALERT HELPER (STEP 3) ------------ */
+
+export function showHighRiskAlert({ resource, usage, threshold }) {
+  toast.error(
+    `${resource} demand is ${usage}% (threshold ${threshold}%) — High Risk`,
+    {
+      pauseOnHover: true,
+      closeOnClick: true,
+    }
+  );
+}
 
 /* ---------------- CHAT ASSISTANT COMPONENT ---------------- */
 
@@ -445,6 +461,10 @@ function DashboardLayout() {
         return <Reports />;
       case "Insights":
         return <Insights />;
+      case "Model Dashboard":
+        return <ModelMonitoring />;
+      case "Multi-Region":
+        return <MultiRegionDashboard />;
       case "Models":
         return <div className="text-white">Models page placeholder</div>;
       default:
@@ -503,6 +523,9 @@ function DashboardLayout() {
 
       {/* Chat assistant panel */}
       <ChatAssistant isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+
+      {/* Global toast container for alerts */}
+      <ToastContainer position="top-right" autoClose={5000} />
     </div>
   );
 }
