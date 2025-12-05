@@ -26,7 +26,7 @@ ChartJS.register(
     Filler
 )
 
-const API_BASE_URL = 'http://localhost:5000'
+const API_BASE_URL = 'http://127.0.0.1:5000'
 
 function App() {
     const [forecast7, setForecast7] = useState(null)
@@ -48,7 +48,7 @@ function App() {
             const [forecast7Res, forecast30Res, capacityRes, healthRes] = await Promise.all([
                 axios.get(`${API_BASE_URL}/api/forecast_7`),
                 axios.get(`${API_BASE_URL}/api/forecast_30`),
-                axios.post(`${API_BASE_URL}/api/capacity_planning`, { capacity: 10000 }),
+                axios.post(`${API_BASE_URL}/api/capacity_planning`, { capacity: 100 }),
                 axios.get(`${API_BASE_URL}/api/monitoring?mape=8.5`)
             ])
 
@@ -68,11 +68,11 @@ function App() {
         if (!forecast7) return null
 
         return {
-            labels: forecast7.predictions.map((_, i) => `Day ${i + 1}`),
+            labels: forecast7.forecast_values.map((_, i) => `Day ${i + 1}`),
             datasets: [
                 {
                     label: '7-Day CPU Forecast',
-                    data: forecast7.predictions,
+                    data: forecast7.forecast_values,
                     borderColor: 'rgb(0, 120, 212)',
                     backgroundColor: 'rgba(0, 120, 212, 0.1)',
                     borderWidth: 3,
@@ -96,7 +96,7 @@ function App() {
             datasets: [
                 {
                     label: '30-Day CPU Forecast',
-                    data: forecast30.predictions,
+                    data: forecast30.forecast_values,
                     borderColor: 'rgb(0, 188, 212)',
                     backgroundColor: 'rgba(0, 188, 212, 0.1)',
                     borderWidth: 3,
@@ -191,6 +191,18 @@ function App() {
         )
     }
 
+    // Helper to extract status from recommendation text
+    const getStatus = (text) => {
+        if (!text) return 'UNKNOWN';
+        return text.split(':')[0].toUpperCase();
+    }
+
+    // Calculate utilization
+    const getUtilization = (data) => {
+        if (!data || !data.available_capacity) return 0;
+        return (data.forecast_demand / data.available_capacity) * 100;
+    }
+
     return (
         <div className="app">
             <header className="header">
@@ -210,7 +222,7 @@ function App() {
                         <div className="metric-info">
                             <h3>Avg Forecast (7d)</h3>
                             <p className="metric-value">
-                                {forecast7 && (forecast7.predictions.reduce((a, b) => a + b, 0) / forecast7.predictions.length).toFixed(2)}%
+                                {forecast7 && (forecast7.forecast_values.reduce((a, b) => a + b, 0) / forecast7.forecast_values.length).toFixed(2)}%
                             </p>
                         </div>
                     </div>
@@ -221,17 +233,17 @@ function App() {
                         </div>
                         <div className="metric-info">
                             <h3>Capacity Status</h3>
-                            <p className="metric-value">{capacityData?.status.toUpperCase()}</p>
+                            <p className="metric-value">{capacityData ? getStatus(capacityData.recommendation_text) : 'N/A'}</p>
                         </div>
                     </div>
 
                     <div className="metric-card glass-card">
                         <div className="metric-icon" style={{ background: 'linear-gradient(135deg, #00BCD4, #00E676)' }}>
-                            {modelHealth?.status === 'stable' ? '✅' : '⚠️'}
+                            {modelHealth?.status.includes('Stable') ? '✅' : '⚠️'}
                         </div>
                         <div className="metric-info">
                             <h3>Model Health</h3>
-                            <p className="metric-value">{modelHealth?.message}</p>
+                            <p className="metric-value">{modelHealth?.status}</p>
                         </div>
                     </div>
 
@@ -241,7 +253,7 @@ function App() {
                         </div>
                         <div className="metric-info">
                             <h3>Utilization</h3>
-                            <p className="metric-value">{capacityData?.utilization.toFixed(2)}%</p>
+                            <p className="metric-value">{capacityData ? getUtilization(capacityData).toFixed(2) : 0}%</p>
                         </div>
                     </div>
                 </div>
@@ -267,19 +279,19 @@ function App() {
                 {capacityData && (
                     <div className="recommendation-card glass-card">
                         <h2>💡 Capacity Recommendation</h2>
-                        <p className="recommendation-text">{capacityData.recommendation}</p>
+                        <p className="recommendation-text">{capacityData.recommendation_text}</p>
                         <div className="recommendation-details">
                             <div className="detail-item">
                                 <span className="detail-label">Current Capacity:</span>
-                                <span className="detail-value">{capacityData.capacity.toLocaleString()}</span>
+                                <span className="detail-value">{capacityData.available_capacity.toLocaleString()}</span>
                             </div>
                             <div className="detail-item">
                                 <span className="detail-label">Avg Forecast:</span>
-                                <span className="detail-value">{capacityData.avg_forecast.toFixed(2)}</span>
+                                <span className="detail-value">{capacityData.forecast_demand.toFixed(2)}</span>
                             </div>
                             <div className="detail-item">
                                 <span className="detail-label">Utilization:</span>
-                                <span className="detail-value">{capacityData.utilization.toFixed(2)}%</span>
+                                <span className="detail-value">{getUtilization(capacityData).toFixed(2)}%</span>
                             </div>
                         </div>
                     </div>
